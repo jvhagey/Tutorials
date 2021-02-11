@@ -5,7 +5,7 @@ permalink: mydoc_Setup.html
 folder: mydoc
 ---
 
-## Conda set up
+# Conda set up
 
 Anaconda has "channels" that are community maintained packages. 
 
@@ -23,7 +23,7 @@ conda config --add channels bioconda
 conda config --add channels conda-forge
 ```
 
-## Creating Conda Environment
+# Creating Conda Environment
 
 Once we have Anaconda installed we can create an environment to install Snakemake into.
 
@@ -48,7 +48,7 @@ source activate smake
 conda install snakemake
 ```
 
-## Creating Conda Environment
+# Creating Conda Environment
 
 If you want a particular version you can search to see what is available:
 
@@ -62,7 +62,7 @@ Then install that version:
 conda create --name smake snakemake==5.32.0
 ```
 
-## Activating the Environment
+# Activating the Environment
 
 When you want to run snakemake you can activate your environment with:
 
@@ -70,7 +70,8 @@ When you want to run snakemake you can activate your environment with:
 source activate smake
 ```
 
-When you are done using the environment use the following to exit the environment.
+When you are done using the environment exit the environment with:
+
 ```
 conda deactivate
 ``` 
@@ -90,5 +91,5 @@ conda remove --name smake --all
 Or 
 
 ```
-conda env remove --name name
+conda env remove --name smakw
 ```
