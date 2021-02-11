@@ -1,4 +1,11 @@
-The easiest way to install Snakemake is via *conda*, which you get through Anaconda or miniconda.
+---
+title: Anaconda Installation
+sidebar: mydoc_sidebar
+permalink: mydoc_introduction.html
+folder: mydoc
+---
+
+The easiest way to install Snakemake (and other bioinformatics software) is via *conda*, which you get through Anaconda or miniconda.
 
 ```
 wget https://repo.anaconda.com/archive/Anaconda3-5.3.1-Linux-x86_64.sh
@@ -12,7 +19,7 @@ wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash Miniconda3-latest-Linux-x86_64.sh
 ```
 
-Installing Snakemake - Installing conda
-========================================================
+Installing conda
+
 
 [![asciicast](https://asciinema.org/a/lrMLpsTBK6PJefxqALVVAVCRz.svg)](https://asciinema.org/a/lrMLpsTBK6PJefxqALVVAVCRz)
