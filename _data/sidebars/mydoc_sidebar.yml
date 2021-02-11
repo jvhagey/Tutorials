@@ -32,8 +32,12 @@ entries:
     output: web, pdf
     folderitems:
     
-    - title: Introduction
-      url: /mydoc_introduction.html
+    - title: Installation
+      url: /mydoc_Installation.html
+      output: web, pdf
+      
+    - title: Set up 
+      url: /mydoc_Setup.html
       output: web, pdf
 
   - title: Snakemake
@@ -41,7 +45,7 @@ entries:
     folderitems:
 
     - title: Installation
-      url: /mydoc_release_notes_60.html
+      url: /mydoc_SMInstallation.html
       output: web, pdf
 
     - title: 5.0 Release notes
