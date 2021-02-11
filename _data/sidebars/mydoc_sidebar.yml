@@ -27,16 +27,20 @@ entries:
       url: /index.html
       output: web, pdf
       type: homepage
-
+      
+  - title: Anaconda and Conda
+    output: web, pdf
+    folderitems:
+    
     - title: Introduction
       url: /mydoc_introduction.html
       output: web, pdf
 
-  - title: Release Notes
+  - title: Snakemake
     output: web, pdf
     folderitems:
 
-    - title: 6.0 Release notes
+    - title: Installation
       url: /mydoc_release_notes_60.html
       output: web, pdf
 
