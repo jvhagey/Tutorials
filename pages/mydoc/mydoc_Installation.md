@@ -1,7 +1,7 @@
 ---
 title: Anaconda Installation
 sidebar: mydoc_sidebar
-permalink: mydoc_introduction.html
+permalink: mydoc_Installation.html
 folder: mydoc
 ---
 
