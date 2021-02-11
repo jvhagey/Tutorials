@@ -1,19 +1,13 @@
 ---
-title:  "Welcome to Jekyll!"
-categories: jekyll update
+title:  "Welcome to the WDPB Tutorials Page!"
+categories: update
 permalink: myupdate.html
 tags: [news]
 ---
 
 
-Theme updates:
+# Our page is now live
 
-- Permalinks
-- Kramdown
-- URL specified in config file
-- removed PDF output
-- removed some of the alternative layouts
-- added blog feature
-- sidebars configurable per page
+Check back for updates
 
 {% include links.html %}
