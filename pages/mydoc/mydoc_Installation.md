@@ -22,4 +22,4 @@ bash Miniconda3-latest-Linux-x86_64.sh
 Installing conda
 
 
-[![asciicast](https://asciinema.org/a/lrMLpsTBK6PJefxqALVVAVCRz.svg)](https://asciinema.org/a/lrMLpsTBK6PJefxqALVVAVCRz)
+#[![asciicast](https://asciinema.org/a/lrMLpsTBK6PJefxqALVVAVCRz.svg)](https://asciinema.org/a/lrMLpsTBK6PJefxqALVVAVCRz)
