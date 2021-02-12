@@ -5,14 +5,14 @@ permalink: mydoc_Setup.html
 folder: mydoc
 ---
 
-# Conda set up
+# Conda Set Up
 
 Anaconda has "channels" that are community maintained packages. 
 
 [conda-forge:](https://conda-forge.org/)
-- common dependencies (gcc, g++, etc)
-- languages (python)  
-- data science type packages (numpy, scipy, machine learning packages)
+- Common dependencies (gcc, g++, etc)
+- Languages (python)  
+- Data science type packages (numpy, scipy, machine learning packages)
 
 [bioconda:](https://bioconda.github.io/)
 - Bioinformatics packages 
@@ -93,3 +93,20 @@ Or
 ```
 conda env remove --name smakw
 ```
+
+# Exporting Your Environment
+
+Now that you have made your own custom environement you can export the details to a .yml file that can be used to install the exact same dependencies into an environment on a different computer. 
+
+First export the details of the packages and their versions.
+
+```
+conda env export > environment.yml
+```
+
+Then on a new computer or instance recreate it. 
+
+```
+conda env create -f environment.yml
+```
+
