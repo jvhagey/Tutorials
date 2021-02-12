@@ -30,6 +30,8 @@ There has been a time in which I want all my files to get to finish up to a cert
 
 # Dynamic/Checkpoints
 
+Here is a [blog](http://ivory.idyll.org/blog/tag/python.html) on checkpoints. 
+
 # Some Helpful Commands
 
 To have snakemake go through a dry run of its workflow so you can make sure its doing what you want before you submit 100 jobs us the `--dryrun` flag. 
