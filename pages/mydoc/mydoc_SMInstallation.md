@@ -1,4 +1,9 @@
-
+---
+title: Snakemake Installation
+sidebar: mydoc_sidebar
+permalink: mydoc_SMInstallation.html
+folder: mydoc
+---
 
 Now that we know how to make a conda environment we can use it to install snakemake into. 
 
