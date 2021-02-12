@@ -48,6 +48,6 @@ entries:
       url: /mydoc_SMInstallation.html
       output: web, pdf
 
-    - title: 5.0 Release notes
-      url: /mydoc_release_notes_50.html
+    - title: The Basics
+      url: /mydoc_Basic.html
       output: web, pdf
