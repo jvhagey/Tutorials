@@ -1,7 +1,7 @@
 ---
 title: Snakemake Basics
 sidebar: mydoc_sidebar
-permalink: mydoc_Basics.html
+permalink: mydoc_Basic.html
 folder: mydoc
 ---
 
