@@ -1,7 +1,7 @@
 ---
-title: Snakemake Basics
+title: Snakemake Server
 sidebar: mydoc_sidebar
-permalink: mydoc_Basics.html
+permalink: mydoc_Server.html
 folder: mydoc
 ---
 
