@@ -51,3 +51,7 @@ entries:
     - title: The Basics
       url: /mydoc_Basic.html
       output: web, pdf
+      
+     - title: Running on Aspen
+      url: /mydoc_Server.html
+      output: web, pdf
