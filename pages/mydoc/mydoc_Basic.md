@@ -5,6 +5,17 @@ permalink: mydoc_Basic.html
 folder: mydoc
 ---
 
+# Outline
+
+Starting point: We have fastq files that have been run through kraken to identify taxonomy of reads. 
+
+The files that are the output of Kraken are found in the Kraken folder.  
+
+1. Run our fastq files through fastqc.  
+2. Filter our fastq files to retain only sequences that belong to *Cryptosporidium*.  
+3. Fastqc to see how removing "contamination" effect the quality of our files.   
+4. Combine the fastqc outfiles using multiqc for easy viewing.  
+
 # Baby Snakefile
 
 Snakemake documenation can be found at its [readthedocs](https://snakemake.readthedocs.io/en/stable/) website.
@@ -12,21 +23,217 @@ Snakemake documenation can be found at its [readthedocs](https://snakemake.readt
 The basics of snakemake:
 
 - This is a rule based workflow management system. 
+- Snakemake will fill in wildcards based on what it finds in the output first. We will see an example of this later. 
+- For relative paths don't use `./PATH` just leave it as `PATH`. 
 
 # Running Snakemake
 
-You can run snakemake by requesting a file you want that occurs in the workflow
-
+The contents of our first baby snakemake file looks contains the following. 
 
 ```
-snakemake xxxx.fastq
+rule fastqc:
+	input:
+		file = '40457_Human_L001_clean_R1.fastq'
+	output:
+		"fastqc/40457_Human_L001_clean_R1_fastqc.zip",
+		"fastqc/40457_Human_L001_clean_R1_fastqc.html"
+	shell:
+		'''
+		echo 'I am running on node:' `hostname`
+		mkdir -p fastqc
+		module load fastqc/0.11.5
+		fastqc 40457_Human_L001_clean_R1.fastq -o fastqc
+		'''
 ```
 
-# Wildcards
+We can run snakemake by requesting the file that is wanted. For this to rune you will also need to tell snakemake how many cores to use when running. 
+
+```
+snakemake fastqc/40457_Human_L001_clean_R1_fastqc.html --cores 1  
+```
+
+Or just tell snakemake to run and it will go through the entire pipeline, which is only one rule right not so we get the same output. 
+
+```
+snakemake --cores 1
+```
+
+We can update some of this code to make it a bit more universal. This will become more useful as we go on. 
+
+```
+rule fastqc:
+	input:
+		file = '40457_Human_L001_clean_R1.fastq'
+	params:
+		outdir = 'fastqc'
+	output:
+		"fastqc/40457_Human_L001_clean_R1_fastqc.zip",
+		"fastqc/40457_Human_L001_clean_R1_fastqc.html"
+	shell:
+		'''
+		echo 'I am running on node:' `hostname`
+		mkdir -p {params.outdir}
+		module load fastqc/0.11.5
+		fastqc {input.file} -o fastqc
+		'''
+```
+
+# Scaling Our Pipeline with Wildcards
+
+We can scale this pipeline by putting in wildcards that are placed in brackets rather than making one rule per sample. 
+
+```
+rule fastqc:
+	input:
+		file = '{sample}_clean_R1.fastq'
+	params:
+		outdir = 'fastqc'
+	output:
+		"fastqc/{sample}_clean_R1_fastqc.zip",
+		"fastqc/{sample}_clean_R1_fastqc.html"
+	shell:
+		'''
+		echo 'I am running on node:' `hostname`
+		mkdir -p {params.outdir}
+		module load fastqc/0.11.5
+		fastqc {input.file} -o fastqc
+		'''
+```
+
+
+**Now back to the code at hand**
+
+However, if we have run the previous code snakemake will tell us there is nothing to be done because it fills in the wildcards based on what it finds in the output files which is only `fastqc/40457_Human_L001_clean_R1_fastqc.zip and fastqc/40457_Human_L001_clean_R1_fastqc.html`. However, if we delete these files and run snakemake we will get the following error.
+
+```
+WorkflowError:
+Target rules may not contain wildcards. Please specify concrete files or a rule without wildcards.
+```
+
+This is because snakemake doesn't know what file you want or if you want all of them. We can either just ask for only one file or create a new rule called `rule all:` that will allow us to tell snakemake that we want all the files. The `rule all` will be put as the first rule  in our snakefile by convention so we can keep track of it easier. 
+
+```
+rule all:
+	input:
+		'fastqc/40457_Human_L001_clean_R1_fastqc.zip', 
+		'fastqc/41573_Cow_L001_clean_R1_fastqc.zip',  
+		'fastqc/41892_Cattle_L001_clean_R1_fastqc.zip'
+```
+
+Cool, thats a bit better, but still a lot of typing and we don't like that. So We can use python syntax and the snakemake `expand()` function to make a list of file names we want. 
+
+```
+SAMPLES = ['40457_Human_L001', '41573_Cow_L001',  '41892_Cattle_L001']
+
+rule all:
+	input:
+    expand('fastqc/{sample}_clean_R1_fastqc.zip', sample=SAMPLES)
+```
+
+But again this is still a lot of typing. This can be cleaned up more by using `glob_wildcards()` to generate the file names for us. For this we give a path and file extention of files we want to collect the wildcard portion of the name from. 
+
+```
+SAMPLES, = glob_wildcards('{sample}_clean_R1.fastq')
+rule all:
+  input:
+    expand('fastqc/{sample}_clean_R1_fastqc.zip', sample=SAMPLES)
+```
+
+Whoops this has only generated files for the R1 file and not the R2. We can add an additional wildcard to collect this information as well. 
+
+```
+SAMPLES, READ, = glob_wildcards('{sample}_clean_R{read}.fastq')
+
+rule all:
+	input:
+		expand('fastqc/{sample}_clean_R{read}_fastqc.zip', sample=SAMPLES, read=READ)
+```
+
+By default the expand function uses `itertools.product` to create every combination of the supplied wildcards. Expand takes an optional, second positional argument which can customize how wildcards are combined. How we currently wrote the expand function will give duplicates so we can add `zip` to clean this up. 
+
+Now our full baby snakemake file looks like this:
+
+```
+SAMPLES, READ, = glob_wildcards('{sample}_clean_R{read}.fastq')
+
+rule all:
+	input:
+		expand('fastqc/{sample}_clean_R{read}_fastqc.zip', zip, sample=SAMPLES, read=READ)
+    
+rule fastqc:
+	input:
+		file = '{sample}_clean_R{read}.fastq'
+	params:
+		outdir = 'fastqc'
+	output:
+		"fastqc/{sample}_clean_R{read}_fastqc.zip",
+		"fastqc/{sample}_clean_R{read}_fastqc.html"
+	shell:
+		'''
+		echo 'I am running on node:' `hostname`
+		mkdir -p {params.outdir}
+		module load fastqc/0.11.5
+		fastqc {input.file} -o fastqc
+		'''
+```
+
+# Notes on Wildcards 
+
+- **Note:** There is nothing special about `sample` you could put `snake` in the brackets and get the same result. That being said its usually good to make it a useful name.   
+
+- You can also contrain wildcards, which can be useful depending on what your file naming system is. As an example you add the following line to the top of the Snakefile. With this constraint, the wildcards can only contain letters, numbers, or underscores (not strictly true but close enough sometimes).  
+
+```
+wildcard_constraints:
+   sample = '\w+'
+```
+
+# Adding in some python
+
+We have seen how to run programs that are already installed on the cluster, what about our own scripts? We can add python directly into the rule by swapping out the `shell` argument for `run`. Here is a little script that opens a file and counts the number of sequences in the file and the average read length. A little silly, but you get the idea. We can add this to our Snakefile, **but don't forget to add the output to the `rule all`** or Snakemake won't know what you want to run this rule as part of the pipeline. 
+
+```
+rule python_practice:
+	input:
+		expand('{sample}_clean_R{read}.fastq', sample=SAMPLES, read=READ)
+	output:
+		'read_lengths.csv'
+	run:
+		'''
+		import pandas as pd
+
+		def get_seq_length():
+			fastq_files = glob.glob("*.fastq")
+			df = pd.DataFrame(columns=['SeqID', 'ave_seq_length', "num_seqs"])  # make a empty dataframe
+			for file in fastq_files:
+				seqID = re.search("^[^_]*", file).group(0)  # Capture the Sequence ID at the beginning
+				num_seqs = 0
+				lengths = []
+				with open(file, "r") as f:
+					lines = f.readlines()
+					for line in lines:
+						line = line.decode("utf8").strip('\n')
+						if line.startswith(('A', "G", "C", "T")):
+							num_seqs = num_seqs + 1
+							lengths.append(len(line))
+						else:
+							pass
+				ave_seq_length = int(sum(lengths)/len(lengths))
+				new_row = {'SeqID': seqID, 'ave_seq_length': ave_seq_length, "num_seqs": num_seqs}
+				df = df.append(new_row, ignore_index=True)
+			df.to_csv('read_lengths.csv', sep=',', index=False)
+
+		def main():
+			get_seq_length()
+
+		if __name__ == '__main__':
+			main()
+		'''
+```
 
 # "Checkpoints"
 
-There has been a time in which I want all my files to get to finish up to a certain rule before processing. I don't know if this is the best way to do it??? I could forsee errors if you call calling on specific file. 
+There has been a time in which I want all my files to finish up to a certain rule before processing to the next rule. I don't know if this is the best way to do it??? I could forsee errors if you call calling on specific file. 
 
 # Dynamic/Checkpoints
 
