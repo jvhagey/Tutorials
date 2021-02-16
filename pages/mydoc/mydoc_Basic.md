@@ -23,12 +23,27 @@ Snakemake documenation can be found at its [readthedocs](https://snakemake.readt
 The basics of snakemake:
 
 - This is a rule based workflow management system. 
+	- Rules generally specify:  
+		- Inputs: Files that the rule operates on (i.e. dependencies)
+		- Outputs: Files that the rule creates
+		- An action: Some command to run. This can be either:  
+			- BASH commands  
+			- Python script (*.py)  
+			- Inline python code  
+			- R script (*.R)
+			- R markdown file (*.Rmd)
+		- Inputs and outputs are used by snakemake to determine the order for which rules are to be run. If a rule B has an input produced as an output of rule A, then rule B will be run after rule A.
+	- There can be multiple inputs/outputs in rules  
+		- Inputs/outputs can be named (using the = syntax), or just listed in order.  
+		- These files can be referred to in the shell command (or python/R scripts)  
+		- You can refer to the inputs/outputs of other rules like this: `rules.rule_name.output`
 - Snakemake will fill in wildcards based on what it finds in the output first. We will see an example of this later. 
 - For relative paths don't use `./PATH` just leave it as `PATH`. 
 
+
 # Running Snakemake
 
-The contents of our first baby snakemake file looks contains the following. 
+To run snakemake you will make a file called `Snakefile`, **IT MUST BE NAMED THIS** snakemake will look for this file in the current directory you are running it in (although you could give a different one as a command-line argument if you wanted) for it to work. The contents of our first baby snakemake file looks contains the following. 
 
 ```
 rule fastqc:
@@ -46,7 +61,7 @@ rule fastqc:
 		'''
 ```
 
-We can run snakemake by requesting the file that is wanted. For this to rune you will also need to tell snakemake how many cores to use when running. 
+We can run snakemake by requesting the file that is wanted. For this to run you will also need to tell snakemake how many cores to use when running. 
 
 ```
 snakemake fastqc/40457_Human_L001_clean_R1_fastqc.html --cores 1  
@@ -78,6 +93,8 @@ rule fastqc:
 		'''
 ```
 
+**Note:** `{input.file}` is the same as `{input[0]}` if you didn't use `file=` in the `input` parameter. Remember that python (and thus snakemake) is a 0 based language so the 0 element is the first element in the series. 
+
 # Scaling Our Pipeline with Wildcards
 
 We can scale this pipeline by putting in wildcards that are placed in brackets rather than making one rule per sample. 
@@ -100,17 +117,14 @@ rule fastqc:
 		'''
 ```
 
-
-**Now back to the code at hand**
-
-However, if we have run the previous code snakemake will tell us there is nothing to be done because it fills in the wildcards based on what it finds in the output files which is only `fastqc/40457_Human_L001_clean_R1_fastqc.zip and fastqc/40457_Human_L001_clean_R1_fastqc.html`. However, if we delete these files and run snakemake we will get the following error.
+However, if we have run the previous code snakemake will tell us there is nothing to be done because it fills in the wildcards based on what it finds in the output files which is only `fastqc/40457_Human_L001_clean_R1_fastqc.zip and fastqc/40457_Human_L001_clean_R1_fastqc.html`. However, if we delete these files and run snakemake with `snakemake --cores 1` we will get the following error.
 
 ```
 WorkflowError:
 Target rules may not contain wildcards. Please specify concrete files or a rule without wildcards.
 ```
 
-This is because snakemake doesn't know what file you want or if you want all of them. We can either just ask for only one file or create a new rule called `rule all:` that will allow us to tell snakemake that we want all the files. The `rule all` will be put as the first rule  in our snakefile by convention so we can keep track of it easier. 
+This is because snakemake doesn't know what file you want or if you want all of them. We can either just ask for only one file with `snakemake fastqc/41573_Cow_L001_clean_R1_fastqc.zip --cores 1` for example, or create a new rule called `rule all:` that will allow us to tell snakemake that we want all the files (or whichever we want). The `rule all` will be put as the first rule in our snakefile by convention so we can keep track of it easier. 
 
 ```
 rule all:
@@ -120,20 +134,21 @@ rule all:
 		'fastqc/41892_Cattle_L001_clean_R1_fastqc.zip'
 ```
 
-Cool, thats a bit better, but still a lot of typing and we don't like that. So We can use python syntax and the snakemake `expand()` function to make a list of file names we want. 
+Cool, thats a bit better, but still a lot of typing and we don't like that. We can use python syntax and the snakemake `expand()` function to make a list of file names we want. 
 
 ```
 SAMPLES = ['40457_Human_L001', '41573_Cow_L001',  '41892_Cattle_L001']
 
 rule all:
 	input:
-    expand('fastqc/{sample}_clean_R1_fastqc.zip', sample=SAMPLES)
+    		expand('fastqc/{sample}_clean_R1_fastqc.zip', sample=SAMPLES)
 ```
 
-But again this is still a lot of typing. This can be cleaned up more by using `glob_wildcards()` to generate the file names for us. For this we give a path and file extention of files we want to collect the wildcard portion of the name from. 
+But again this is still a lot of typing. This can be cleaned up more by using snakemake's `glob_wildcards()` to generate the file names for us. For this we give a path and file extention of files we want to collect the wildcard portion of the name from. 
 
 ```
 SAMPLES, = glob_wildcards('{sample}_clean_R1.fastq')
+
 rule all:
   input:
     expand('fastqc/{sample}_clean_R1_fastqc.zip', sample=SAMPLES)
@@ -142,11 +157,21 @@ rule all:
 Whoops this has only generated files for the R1 file and not the R2. We can add an additional wildcard to collect this information as well. 
 
 ```
-SAMPLES, READ, = glob_wildcards('{sample}_clean_R{read}.fastq')
+SAMPLES, READS, = glob_wildcards('{sample}_clean_R{read}.fastq')
 
 rule all:
 	input:
-		expand('fastqc/{sample}_clean_R{read}_fastqc.zip', sample=SAMPLES, read=READ)
+		expand('fastqc/{sample}_clean_R{read}_fastqc.zip', sample=SAMPLES, read=READS)
+```
+
+You could also explicity state what the wildcards will be instead:
+
+```
+SAMPLES, = glob_wildcards('{sample}_clean_R1.fastq')
+
+rule all:
+	input:
+		expand('fastqc/{sample}_clean_R{read}_fastqc.zip', sample=SAMPLES, read=["1", "2")
 ```
 
 By default the expand function uses `itertools.product` to create every combination of the supplied wildcards. Expand takes an optional, second positional argument which can customize how wildcards are combined. How we currently wrote the expand function will give duplicates so we can add `zip` to clean this up. 
@@ -154,11 +179,11 @@ By default the expand function uses `itertools.product` to create every combinat
 Now our full baby snakemake file looks like this:
 
 ```
-SAMPLES, READ, = glob_wildcards('{sample}_clean_R{read}.fastq')
+SAMPLES, READS, = glob_wildcards('{sample}_clean_R{read}.fastq')
 
 rule all:
 	input:
-		expand('fastqc/{sample}_clean_R{read}_fastqc.zip', zip, sample=SAMPLES, read=READ)
+		expand('fastqc/{sample}_clean_R{read}_fastqc.zip', zip, sample=SAMPLES, read=READS)
     
 rule fastqc:
 	input:
@@ -190,46 +215,64 @@ wildcard_constraints:
 
 # Adding in some python
 
-We have seen how to run programs that are already installed on the cluster, what about our own scripts? We can add python directly into the rule by swapping out the `shell` argument for `run`. Here is a little script that opens a file and counts the number of sequences in the file and the average read length. A little silly, but you get the idea. We can add this to our Snakefile, **but don't forget to add the output to the `rule all`** or Snakemake won't know what you want to run this rule as part of the pipeline. 
+We have seen how to run programs that are already installed on the cluster, what about our own scripts? We can add python directly into the rule by swapping out the `shell` argument for `run`. 
+
+- A `shell` action executes a command-line instruction.  
+- A `run` action executes Python code.  
+
+Here is a little script that opens a file and counts the number of sequences in the file and the average read length. A little silly, but you get the idea. We can add this to our Snakefile, **but don't forget to add the output to the `rule all`** or snakemake won't know what you want to run this rule as part of the pipeline. **NOTE: you don't need the triple quotes when you use `run:` rather than `shell:`** 
 
 ```
+# import packages for python in rule python_practice
+import pandas as pd
+import glob
+import re
+		
 rule python_practice:
 	input:
-		expand('{sample}_clean_R{read}.fastq', sample=SAMPLES, read=READ)
+		expand('{sample}_clean_R{read}.fastq', zip, sample=SAMPLES, read=READS)
 	output:
 		'read_lengths.csv'
 	run:
-		'''
-		import pandas as pd
-
-		def get_seq_length():
-			fastq_files = glob.glob("*.fastq")
-			df = pd.DataFrame(columns=['SeqID', 'ave_seq_length', "num_seqs"])  # make a empty dataframe
-			for file in fastq_files:
-				seqID = re.search("^[^_]*", file).group(0)  # Capture the Sequence ID at the beginning
-				num_seqs = 0
-				lengths = []
-				with open(file, "r") as f:
-					lines = f.readlines()
-					for line in lines:
-						line = line.decode("utf8").strip('\n')
-						if line.startswith(('A', "G", "C", "T")):
-							num_seqs = num_seqs + 1
-							lengths.append(len(line))
-						else:
-							pass
+		fastq_files = glob.glob("*.fastq")
+		df = pd.DataFrame(columns=['SeqID', 'ave_seq_length', "num_seqs"])  # make a empty dataframe
+		for file in fastq_files:
+			print("Analyzing {}".format(file))
+			seqID = re.search("^[^_]*", file).group(0)  # Capture the Sequence ID at the beginning
+			num_seqs = 0
+			lengths = []
+			with open(file, "r") as f:
+				lines = f.readlines()
+				for line in lines:
+					line = line.strip('\n')
+					if line.startswith(('A', "G", "C", "T")):
+						num_seqs = num_seqs + 1
+						lengths.append(len(line))
+					else:
+						pass
 				ave_seq_length = int(sum(lengths)/len(lengths))
 				new_row = {'SeqID': seqID, 'ave_seq_length': ave_seq_length, "num_seqs": num_seqs}
 				df = df.append(new_row, ignore_index=True)
-			df.to_csv('read_lengths.csv', sep=',', index=False)
 
-		def main():
-			get_seq_length()
-
-		if __name__ == '__main__':
-			main()
-		'''
+		df.to_csv('read_lengths.csv', sep=',', index=False)
 ```
+
+# Re-running rules
+
+If you make a change and need to re-run a rule, there are a few options:
+
+1. If you modify any file that an output depends on, and then rerun snakemake, everything downstream from that file is re-run.  
+
+For example, if we modify an output using `touch STAR/results.bam` and then run snakemake all, the quantify_transcripts and plot_results rules are re-run.
+
+2. If you modify the code behind a rule, you can force the re-run of the rule by using the `-f` flag
+
+```
+snakemake -f align_reads # forces this step to run
+snakemake all # runs everything else downstream of align_reads
+```
+
+3. If you just want to re-run everything, you can use the `-F` flag. This forces a rule to run as well as every rule it depends on.  
 
 # "Checkpoints"
 
@@ -241,7 +284,27 @@ Here is a [blog](http://ivory.idyll.org/blog/tag/python.html) on checkpoints.
 
 # Some Helpful Commands
 
-To have snakemake go through a dry run of its workflow so you can make sure its doing what you want before you submit 100 jobs us the `--dryrun` flag. 
+To list all the rules in the file run one of the following.
+
+```
+snakemake --list
+```
+or
+```
+snakemake -l
+```
+
+To understand why each rule is being run use the `--reason` flag.
+
+```
+snakemake --reason
+```
+or 
+```
+snakemake -r
+```
+
+To have snakemake go through a dry run of its workflow so you can make sure its doing what you want before you submit 100 jobs us the `--dryrun` flag. This will only show what would have been run without running any commands.
 
 ```
 snakemake --dryrun 
@@ -251,6 +314,21 @@ To visualize your workflow you can generate a .png image with:
 
 ```
 snakemake --dag | dot -Tpng > dag.png
+```
+# Protected and Temporary Files
+
+Output files can be marked as `protected` in the Snakefile and it will be 'locked' (write permissions removed) after creation so that it's harder to accidentally delete it.
+
+Alternately, you can mark a file as `temp` and it will be deleted as soon as any rules that depend on it are run. This is a good way to automatically remove intermediate files that take up lots of hard disk space.
+
+```
+rule example_rule:
+    input:
+        "some/file/input.txt",
+    output:
+        protected("my_protected_file.txt"),
+        temp("my_temporary_file.txt"),
+    script: "do_things.py"
 ```
 
 # Troubleshooting (AKA mistakes I made)
