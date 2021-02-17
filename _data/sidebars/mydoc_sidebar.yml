@@ -48,10 +48,10 @@ entries:
       url: /mydoc_SMInstallation.html
       output: web, pdf
 
-    - title: The Basics
+    - title: The Basic Tutorial
       url: /mydoc_Basic.html
       output: web, pdf
       
-    - title: Running on Aspen
+    - title: Running on a SGE Cluster
       url: /mydoc_Server.html
       output: web, pdf
