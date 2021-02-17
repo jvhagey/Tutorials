@@ -453,7 +453,9 @@ There has been a time in which I want all my files to finish up to a certain rul
 
 # Dynamic/Checkpoints
 
-Here is a [blog](http://ivory.idyll.org/blog/tag/python.html) on checkpoints. 
+Snakemake provides experimental support for dynamic files using the `dynamic()` function. Dynamic files can be used whenever one has a rule for which the number of output files is unknown before the rule was executed. 
+
+Here is a [blog](http://ivory.idyll.org/blog/tag/python.html) on checkpoints/dynamic files. Snakemakes [documention](https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html) also covers this.
 
 # Some Helpful Commands
 
