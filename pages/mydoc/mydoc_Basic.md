@@ -16,7 +16,7 @@ The files that are the output of Kraken are found in the Kraken folder.
 3. Fastqc to see how removing "contamination" effect the quality of our files.   
 4. Combine the fastqc outfiles using multiqc for easy viewing.  
 
-# Baby Snakefile
+# How Snakemake Works
 
 Snakemake documenation can be found at its [readthedocs](https://snakemake.readthedocs.io/en/stable/) website.
 
@@ -34,7 +34,7 @@ The basics of snakemake:
 			- R markdown file (*.Rmd)
 		- Inputs and outputs are used by snakemake to determine the order for which rules are to be run. If a rule B has an input produced as an output of rule A, then rule B will be run after rule A.
 		-For determining whether output files have to be re-created, Snakemake checks whether the file modification date (i.e. the timestamp) of any input file of the same job is newer than the timestamp of the output file. 
-			- This can be overridden by marking an input file with the `ancient()` function. An example is of ignoring timestamps is found [here](https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html).  
+			- This can be overridden by marking an input file with the `ancient()` function. An example of ignoring timestamps is found [here](https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html).  
 		- All the arguments that can be used in a rule can be found [here](https://snakemake.readthedocs.io/en/stable/snakefiles/writing_snakefiles.html).  
 	- There can be multiple inputs/outputs in rules  
 		- Inputs/outputs can be named (using the = syntax), or just listed in order.  
@@ -60,7 +60,7 @@ rule fastqc:
 		echo 'I am running on node:' `hostname`
 		mkdir -p fastqc
 		module load fastqc/0.11.5
-		fastqc 40457_Human_L001_clean_R1.fastq -o fastqc
+		fastqc 40457_Human_L001_R1.fastq -o fastqc
 		'''
 ```
 
@@ -190,7 +190,7 @@ rule all:
 
 By default the expand function uses `itertools.product` to create every combination of the supplied wildcards. Expand takes an optional, second positional argument which can customize how wildcards are combined. How we currently wrote the expand function will give duplicates so we can add `zip` to clean this up. 
 
-We can use a simplified variant of `expand()`, called `multiext()`, that allows us to define a set of output or input files that just differ by their extension 'multiext("fastqc/{sample}_R{read}_fastqc", ".zip", ".html")
+We can use a simplified variant of `expand()`, called `multiext()`, that allows us to define a set of output or input files that just differ by their extension. This will clean things up a bit more. 
 
 Now our full baby snakemake file looks like this:
 
@@ -246,11 +246,11 @@ import re
 		
 rule python_practice:
 	input:
-		expand('{sample}_clean_R{read}.fastq', zip, sample=SAMPLES, read=READS)
+		expand('files/{sample}_R{read}.fastq', zip, sample=SAMPLES, read=READS)
 	output:
 		'read_lengths.csv'
 	run:
-		fastq_files = glob.glob("*.fastq")
+		fastq_files = glob.glob("files/*.fastq")
 		df = pd.DataFrame(columns=['SeqID', 'ave_seq_length', "num_seqs"])  # make a empty dataframe
 		for file in fastq_files:
 			print("Analyzing {}".format(file))
@@ -273,19 +273,73 @@ rule python_practice:
 		df.to_csv('read_lengths.csv', sep=',', index=False)
 ```
 
-# Re-running rules
+Notice that you can write in python directly in the snakefile without it being part of a rule. 
+
+# Running Python Scripts
+
+If you have a python script you want to run you can run it like you would on the command line. 
+
+```
+rule clean_kraken:
+	'''This rule will identify the sequences that belong to crypto and return fastq files with only these sequences'''
+	input:
+		file_1 = 'files/{sample}_R1.fastq',
+		file_2 = 'files/{sample}_R2.fastq',
+		kraken = 'Kraken/{sample}.kraken',
+		report = 'Kraken/{sample}_report.txt'
+	params:
+		outdir = 'Kraken_Cleaned'
+	output:
+		k_file_1 = 'Kraken_Cleaned/{sample}_Kclean_R1.fastq',
+		k_file_2 = 'Kraken_Cleaned/{sample}_Kclean_R2.fastq'
+	message: '''--- Running extract_kraken_reads.py to get fastq files without contamination. ---'''
+	shell:
+		'''
+		echo 'I am running on node:' `hostname`
+		mkdir -p {params.outdir}
+		python extract_kraken_reads.py --include-children --fastq-output --taxid 5806 -s {input.file_1} -s2 {input.file_2} -o {output.k_file_1} -o2 {output.k_file_2} --report {input.report} -k {input.kraken}
+		'''
+```
+
+Notice here we added the `message:` argument. When executing snakemake, a short summary for each running rule is given to the console. This can be overridden by specifying a message for a rule.
+
+Another way to run a python script (or any type of script) would be to use `script:` rather than `shell:` argument and have the python script make the output directory for us. 
+
+```
+rule clean_kraken:
+	'''This rule will identify the sequences that belong to crypto and return fastq files with only these sequences'''
+	input:
+		file_1 = 'files/{sample}_R1.fastq',
+		file_2 = 'files/{sample}_R2.fastq',
+		kraken = 'Kraken/{sample}.kraken',
+		report = 'Kraken/{sample}_report.txt'
+	params:
+		outdir = 'Kraken_Cleaned'
+	output:
+		k_file_1 = 'Kraken_Cleaned/{sample}_Kclean_R1.fastq',
+		k_file_2 = 'Kraken_Cleaned/{sample}_Kclean_R2.fastq'
+	message: '''--- Running extract_kraken_reads.py to get fastq files without contamination. ---'''
+	script:
+        "extract_kraken_reads.py --include-children --fastq-output --taxid 5806 -s {input.file_1} -s2 {input.file_2} -o {output.k_file_1} -o2 {output.k_file_2} --report {input.report} -k {input.kraken}"
+	
+```
+# Your Turn
+
+Now that you have a bit of experience with snakemake go ahead and write a new rule to run fastqc on the new files that have been created. 
+
+# Re-running Rules
 
 If you make a change and need to re-run a rule, there are a few options:
 
 1. If you modify any file that an output depends on, and then rerun snakemake, everything downstream from that file is re-run.  
 
-For example, if we modify an output using `touch STAR/results.bam` and then run snakemake all, the quantify_transcripts and plot_results rules are re-run.
+For example, if we modify an output (for example 40457_Human_L001_R2.fastq) by running `touch files/40457_Human_L001_R2.fastq` at the command line this will update the time stamp on this file which then triggers a rerun of the `fastqc` and `python_practice` rules when `snakemake --cores 1` is run.
 
 2. If you modify the code behind a rule, you can force the re-run of the rule by using the `-f` flag
 
 ```
-snakemake -f align_reads # forces this step to run
-snakemake all # runs everything else downstream of align_reads
+snakemake -f python_practice --cores 1 # forces this step to run
+snakemake all --cores 1 # runs everything needed to get the files listed in the rule all:
 ```
 
 3. If you just want to re-run everything, you can use the `-F` flag. This forces a rule to run as well as every rule it depends on.  
