@@ -325,7 +325,110 @@ rule clean_kraken:
 ```
 # Your Turn
 
-Now that you have a bit of experience with snakemake go ahead and write a new rule to run fastqc on the new files that have been created. 
+Now that you have a bit of experience with snakemake go ahead and write a new rule to run fastqc on the new files that have been created. When you have given it a shot click below to see my solution. 
+
+<details><summary>Answer</summary>
+<p>
+
+Your code should look something like this:
+
+```
+# import packages for python in rule python_practice
+import pandas as pd
+import glob
+import re
+
+SAMPLES, READS, = glob_wildcards('files/{sample}_R{read}.fastq')
+
+rule all:
+	input:
+		expand('fastqc/{sample}_R{read}_fastqc.zip', zip, sample=SAMPLES, read=READS),
+		expand('fastqc/{sample}_R{read}_fastqc.html', zip, sample=SAMPLES, read=READS),
+		expand('Kraken_Cleaned/{sample}_Kclean_R{read}.fastq', zip, sample=SAMPLES, read=READS),
+		expand('fastqc_Cleaned/{sample}_Kclean_R{read}_fastqc.zip', zip, sample=SAMPLES, read=READS),
+		expand('fastqc_Cleaned/{sample}_Kclean_R{read}_fastqc.html', zip, sample=SAMPLES, read=READS),
+		"read_lengths.csv"
+
+rule fastqc:
+	input:
+		file = 'files/{sample}_R{read}.fastq'
+	params:
+		outdir = 'fastqc'
+	output:
+		multiext("fastqc/{sample}_R{read}_fastqc", ".zip", ".html")
+	shell:
+		'''
+		echo 'I am running on node:' `hostname`
+		mkdir -p {params.outdir}
+		module load fastqc/0.11.5
+		fastqc {input.file} -o {params.outdir}
+		'''
+
+rule python_practice:
+	input:
+		expand('files/{sample}_R{read}.fastq', zip, sample=SAMPLES, read=READS)
+	output:
+		'read_lengths.csv'
+	run:
+		fastq_files = glob.glob("files/*.fastq")
+		df = pd.DataFrame(columns=['SeqID', 'ave_seq_length', "num_seqs"])  # make a empty dataframe
+		for file in fastq_files:
+			print("Analyzing {}".format(file))
+			seqID = re.search("^[^_]*", file).group(0)  # Capture the Sequence ID at the beginning
+			num_seqs = 0
+			lengths = []
+			with open(file, "r") as f:
+				lines = f.readlines()
+				for line in lines:
+					line = line.strip('\n')
+					if line.startswith(('A', "G", "C", "T")):
+						num_seqs = num_seqs + 1
+						lengths.append(len(line))
+					else:
+						pass
+				ave_seq_length = int(sum(lengths)/len(lengths))
+				new_row = {'SeqID': seqID, 'ave_seq_length': ave_seq_length, "num_seqs": num_seqs}
+				df = df.append(new_row, ignore_index=True)
+
+		df.to_csv('read_lengths.csv', sep=',', index=False)
+
+rule clean_kraken:
+	'''This rule will identify the sequences that belong to crypto and return fastq files with only these sequences'''
+	input:
+		file_1 = 'files/{sample}_R1.fastq',
+		file_2 = 'files/{sample}_R2.fastq',
+		kraken = 'Kraken/{sample}.kraken',
+		report = 'Kraken/{sample}_report.txt'
+	params:
+		outdir = 'Kraken_Cleaned'
+	output:
+		k_file_1 = 'Kraken_Cleaned/{sample}_Kclean_R1.fastq',
+		k_file_2 = 'Kraken_Cleaned/{sample}_Kclean_R2.fastq'
+	message: '''--- Running extract_kraken_reads.py to get fastq files without contamination. ---'''
+	shell:
+		'''
+		echo 'I am running on node:' `hostname`
+		mkdir -p {params.outdir}
+		python extract_kraken_reads.py --include-children --fastq-output --taxid 5806 -s {input.file_1} -s2 {input.file_2} -o {output.k_file_1} -o2 {output.k_file_2} --report {input.report} -k {input.kraken}
+		'''
+
+rule fastqc_2:
+	input:
+		file = 'Kraken_Cleaned/{sample}_Kclean_R{read}.fastq'
+	params:
+		outdir = 'fastqc_Cleaned'
+	output:
+		multiext("fastqc_Cleaned/{sample}_Kclean_R{read}_fastqc", ".zip", ".html")
+	shell:
+		'''
+		mkdir -p {params.outdir}
+		module load fastqc/0.11.5
+		fastqc {input.file} -o {params.outdir}
+		'''
+```
+
+</p>
+</details>
 
 # Re-running Rules
 
@@ -346,7 +449,7 @@ snakemake all --cores 1 # runs everything needed to get the files listed in the 
 
 # "Checkpoints"
 
-There has been a time in which I want all my files to finish up to a certain rule before processing to the next rule. I don't know if this is the best way to do it??? I could forsee errors if you call calling on specific file. 
+There has been a time in which I want all my files to finish up to a certain rule before processing to the next rule. I don't know if this is the best way to do this, but I have created a rule that requires all my files as in the `input` using `expand()` and had it create a blank file that the next rule downstream required as `input:`. I could forsee errors with this so be careful...
 
 # Dynamic/Checkpoints
 
@@ -385,6 +488,10 @@ To visualize your workflow you can generate a .png image with:
 ```
 snakemake --dag | dot -Tpng > dag.png
 ```
+
+In this case the DAG looks like this:
+![image of dag](/images/dag.png)
+
 # Protected and Temporary Files
 
 Output files can be marked as `protected` in the Snakefile and it will be 'locked' (write permissions removed) after creation so that it's harder to accidentally delete it.
