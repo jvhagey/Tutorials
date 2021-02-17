@@ -229,6 +229,8 @@ wildcard_constraints:
    sample = '\w+'
 ```
 
+More details on wildcards can be found in the [snakemake documenation](https://snakemake.readthedocs.io/en/stable/project_info/faq.html#how-do-i-run-my-rule-on-all-files-of-a-certain-directory).
+
 # Adding in some python
 
 We have seen how to run programs that are already installed on the cluster, what about our own scripts? We can add python directly into the rule by swapping out the `shell` argument for `run`. 
@@ -458,6 +460,8 @@ Snakemake provides experimental support for dynamic files using the `dynamic()` 
 Here is a [blog](http://ivory.idyll.org/blog/tag/python.html) on checkpoints/dynamic files. Snakemakes [documention](https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html) also covers this.
 
 # Some Helpful Commands
+
+There are lots of flags snakemake uses you can find a list [here](https://snakemake.readthedocs.io/en/stable/executing/cli.html)
 
 To list all the rules in the file run one of the following.
 
