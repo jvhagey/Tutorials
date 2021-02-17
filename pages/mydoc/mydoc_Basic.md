@@ -33,6 +33,9 @@ The basics of snakemake:
 			- R script (*.R)
 			- R markdown file (*.Rmd)
 		- Inputs and outputs are used by snakemake to determine the order for which rules are to be run. If a rule B has an input produced as an output of rule A, then rule B will be run after rule A.
+		-For determining whether output files have to be re-created, Snakemake checks whether the file modification date (i.e. the timestamp) of any input file of the same job is newer than the timestamp of the output file. 
+			- This can be overridden by marking an input file with the `ancient()` function. An example is of ignoring timestamps is found [here](https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html).  
+		- All the arguments that can be used in a rule can be found [here](https://snakemake.readthedocs.io/en/stable/snakefiles/writing_snakefiles.html).  
 	- There can be multiple inputs/outputs in rules  
 		- Inputs/outputs can be named (using the = syntax), or just listed in order.  
 		- These files can be referred to in the shell command (or python/R scripts)  
@@ -48,10 +51,10 @@ To run snakemake you will make a file called `Snakefile`, **IT MUST BE NAMED THI
 ```
 rule fastqc:
 	input:
-		file = '40457_Human_L001_clean_R1.fastq'
+		file = '40457_Human_L001_R1.fastq'
 	output:
-		"fastqc/40457_Human_L001_clean_R1_fastqc.zip",
-		"fastqc/40457_Human_L001_clean_R1_fastqc.html"
+		"fastqc/40457_Human_L001_R1_fastqc.zip",
+		"fastqc/40457_Human_L001_R1_fastqc.html"
 	shell:
 		'''
 		echo 'I am running on node:' `hostname`
@@ -64,7 +67,7 @@ rule fastqc:
 We can run snakemake by requesting the file that is wanted. For this to run you will also need to tell snakemake how many cores to use when running. 
 
 ```
-snakemake fastqc/40457_Human_L001_clean_R1_fastqc.html --cores 1  
+snakemake fastqc/40457_Human_L001_R1_fastqc.html --cores 1  
 ```
 
 Or just tell snakemake to run and it will go through the entire pipeline, which is only one rule right not so we get the same output. 
@@ -73,23 +76,33 @@ Or just tell snakemake to run and it will go through the entire pipeline, which 
 snakemake --cores 1
 ```
 
+If you already ran snakemake, snakemake will just tell you there is nothing to do and you will see this output: 
+
+```
+Building DAG of jobs...
+Nothing to be done.
+Complete log: $PATH/Snakemake_Tutorial/.snakemake/log/2021-02-17T144540.917872.snakemake.log
+```
+
+Thanks snakemake. You can keep running this and nothing "bad" will happen, how refreshing...
+
 We can update some of this code to make it a bit more universal. This will become more useful as we go on. 
 
 ```
 rule fastqc:
 	input:
-		file = '40457_Human_L001_clean_R1.fastq'
+		file = '40457_Human_L001_R1.fastq'
 	params:
 		outdir = 'fastqc'
 	output:
-		"fastqc/40457_Human_L001_clean_R1_fastqc.zip",
-		"fastqc/40457_Human_L001_clean_R1_fastqc.html"
+		"fastqc/40457_Human_L001_R1_fastqc.zip",
+		"fastqc/40457_Human_L001_R1_fastqc.html"
 	shell:
 		'''
 		echo 'I am running on node:' `hostname`
 		mkdir -p {params.outdir}
 		module load fastqc/0.11.5
-		fastqc {input.file} -o fastqc
+		fastqc {input.file} -o {params.outdir}
 		'''
 ```
 
@@ -102,103 +115,106 @@ We can scale this pipeline by putting in wildcards that are placed in brackets r
 ```
 rule fastqc:
 	input:
-		file = '{sample}_clean_R1.fastq'
+		file = '{sample}_R1.fastq'
 	params:
 		outdir = 'fastqc'
 	output:
-		"fastqc/{sample}_clean_R1_fastqc.zip",
-		"fastqc/{sample}_clean_R1_fastqc.html"
+		"fastqc/{sample}_R1_fastqc.zip",
+		"fastqc/{sample}_R1_fastqc.html"
 	shell:
 		'''
 		echo 'I am running on node:' `hostname`
 		mkdir -p {params.outdir}
 		module load fastqc/0.11.5
-		fastqc {input.file} -o fastqc
+		fastqc {input.file} -o {params.outdir}
 		'''
 ```
 
-However, if we have run the previous code snakemake will tell us there is nothing to be done because it fills in the wildcards based on what it finds in the output files which is only `fastqc/40457_Human_L001_clean_R1_fastqc.zip and fastqc/40457_Human_L001_clean_R1_fastqc.html`. However, if we delete these files and run snakemake with `snakemake --cores 1` we will get the following error.
+However, if we have run snakemake with `snakemake fastqc/40457_Human_L001_R1_fastqc.html --cores 1` it will tell us there is nothing to be done because it fills in the wildcards based on what it finds in the output files which is only `fastqc/40457_Human_L001_R1_fastqc.zip and fastqc/40457_Human_L001_R1_fastqc.html`. However, if we delete these files and run snakemake with `snakemake fastqc/40457_Human_L001_R1_fastqc.html --cores 1` we will get the following error.
 
 ```
 WorkflowError:
 Target rules may not contain wildcards. Please specify concrete files or a rule without wildcards.
 ```
 
-This is because snakemake doesn't know what file you want or if you want all of them. We can either just ask for only one file with `snakemake fastqc/41573_Cow_L001_clean_R1_fastqc.zip --cores 1` for example, or create a new rule called `rule all:` that will allow us to tell snakemake that we want all the files (or whichever we want). The `rule all` will be put as the first rule in our snakefile by convention so we can keep track of it easier. 
+This same error would have happened if you had ran `snakemake --cores 1` because snakemake doesn't know what file you want or if you want all of them. We can either just ask for only one file with `snakemake fastqc/41573_Cow_L001_R1_fastqc.zip --cores 1` for example, or create a new rule called `rule all:` that will allow us to tell snakemake that we want all the files (or whichever we want). The `rule all` will be put as the first rule in our snakefile by convention so we can keep track of it easier. 
 
 ```
 rule all:
 	input:
-		'fastqc/40457_Human_L001_clean_R1_fastqc.zip', 
-		'fastqc/41573_Cow_L001_clean_R1_fastqc.zip',  
-		'fastqc/41892_Cattle_L001_clean_R1_fastqc.zip'
+		'fastqc/40457_Human_L001_R1_fastqc.zip', 
+		'fastqc/41573_Cow_L001_R1_fastqc.zip'
 ```
 
 Cool, thats a bit better, but still a lot of typing and we don't like that. We can use python syntax and the snakemake `expand()` function to make a list of file names we want. 
 
 ```
-SAMPLES = ['40457_Human_L001', '41573_Cow_L001',  '41892_Cattle_L001']
+SAMPLES = ['40457_Human_L001', '41573_Cow_L001']
 
 rule all:
 	input:
-    		expand('fastqc/{sample}_clean_R1_fastqc.zip', sample=SAMPLES)
+    		expand('fastqc/{sample}_R1_fastqc.zip', sample=SAMPLES)
 ```
 
 But again this is still a lot of typing. This can be cleaned up more by using snakemake's `glob_wildcards()` to generate the file names for us. For this we give a path and file extention of files we want to collect the wildcard portion of the name from. 
 
 ```
-SAMPLES, = glob_wildcards('{sample}_clean_R1.fastq')
+SAMPLES, = glob_wildcards('files/{sample}_R1.fastq')
 
 rule all:
   input:
-    expand('fastqc/{sample}_clean_R1_fastqc.zip', sample=SAMPLES)
+    expand('fastqc/{sample}_R1_fastqc.zip', sample=SAMPLES)
 ```
 
-Whoops this has only generated files for the R1 file and not the R2. We can add an additional wildcard to collect this information as well. 
+**Note:** I have noticed that `glob_wildcards()` will act recursively, if the files are in the top directory. So I recommend you have your files in their own directory OR that you put in full paths for input and output files to avoid weird things happening... 
+
+Whoops, this has only generated files for the R1 file and not the R2. We can add an additional wildcard to collect this information as well. 
 
 ```
-SAMPLES, READS, = glob_wildcards('{sample}_clean_R{read}.fastq')
+SAMPLES, READS, = glob_wildcards('files/{sample}_R{read}.fastq')
 
 rule all:
 	input:
-		expand('fastqc/{sample}_clean_R{read}_fastqc.zip', sample=SAMPLES, read=READS)
+		expand('fastqc/{sample}_R{read}_fastqc.zip', sample=SAMPLES, read=READS)
 ```
 
 You could also explicity state what the wildcards will be instead:
 
 ```
-SAMPLES, = glob_wildcards('{sample}_clean_R1.fastq')
+SAMPLES, = glob_wildcards('{sample}_R1.fastq')
 
 rule all:
 	input:
-		expand('fastqc/{sample}_clean_R{read}_fastqc.zip', sample=SAMPLES, read=["1", "2")
+		expand('fastqc/{sample}_R{read}_fastqc.zip', sample=SAMPLES, read=["1", "2")
 ```
 
 By default the expand function uses `itertools.product` to create every combination of the supplied wildcards. Expand takes an optional, second positional argument which can customize how wildcards are combined. How we currently wrote the expand function will give duplicates so we can add `zip` to clean this up. 
 
+We can use a simplified variant of `expand()`, called `multiext()`, that allows us to define a set of output or input files that just differ by their extension 'multiext("fastqc/{sample}_R{read}_fastqc", ".zip", ".html")
+
 Now our full baby snakemake file looks like this:
 
 ```
-SAMPLES, READS, = glob_wildcards('{sample}_clean_R{read}.fastq')
+SAMPLES, READS, = glob_wildcards('files/{sample}_R{read}.fastq')
 
 rule all:
 	input:
-		expand('fastqc/{sample}_clean_R{read}_fastqc.zip', zip, sample=SAMPLES, read=READS)
-    
+		expand('fastqc/{sample}_R{read}_fastqc.zip', zip, sample=SAMPLES, read=READS),
+		expand('fastqc/{sample}_R{read}_fastqc.html', zip, sample=SAMPLES, read=READS),
+
 rule fastqc:
 	input:
-		file = '{sample}_clean_R{read}.fastq'
+		file = '{sample}_R{read}.fastq'
 	params:
 		outdir = 'fastqc'
 	output:
-		"fastqc/{sample}_clean_R{read}_fastqc.zip",
-		"fastqc/{sample}_clean_R{read}_fastqc.html"
+		multiext("fastqc/{sample}_R{read}_fastqc", ".zip", ".html")
 	shell:
 		'''
 		echo 'I am running on node:' `hostname`
 		mkdir -p {params.outdir}
 		module load fastqc/0.11.5
-		fastqc {input.file} -o fastqc
+		fastqc {input.file} -o {params.outdir}
 		'''
 ```
 
@@ -206,7 +222,7 @@ rule fastqc:
 
 - **Note:** There is nothing special about `sample` you could put `snake` in the brackets and get the same result. That being said its usually good to make it a useful name.   
 
-- You can also contrain wildcards, which can be useful depending on what your file naming system is. As an example you add the following line to the top of the Snakefile. With this constraint, the wildcards can only contain letters, numbers, or underscores (not strictly true but close enough sometimes).  
+- You can also contrain wildcards, which can be useful depending on what your file naming system is. As an example you add the following line to the top of the Snakefile. With this constraint, the wildcards can only contain letters, numbers, or underscores (not strictly true, but close enough sometimes).  
 
 ```
 wildcard_constraints:
@@ -344,3 +360,13 @@ Not all output, log and benchmark files of rule xxx contain the same wildcards. 
 ```
 
 **Solution**: put directories under `params:` rather than `output`.
+
+If you get this error:
+
+```
+SyntaxError in line 4 of $PATH/Snakemake_Tutorial/Snakefile:
+EOF in multi-line statement (Snakefile, line XX)
+```
+
+The most common cause is not having a comma after every line for your inputs and outputs. 
+
