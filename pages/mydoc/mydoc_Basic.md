@@ -498,6 +498,34 @@ snakemake --dag | dot -Tpng > dag.png
 In this case the DAG looks like this:
 ![image of dag](/images/dag.png)
 
+# Keeping Things Tidy
+
+If you have a lot of paths that might change you can simply your snakefile my creating a `config.json` file. For example, we can create one that has a working directory defined.
+
+```
+{
+    "workdir": "/scicomp/home-pure/USER_ID/Snakemake_Tutorial/"
+}
+```
+
+This can then be called within your snakefile like this (using rule all as an expample):
+
+```
+configfile: '$PATH_TO_CONFIG/config.json'
+
+rule all:
+	input:
+		expand(config['workdir'] + 'fastqc/{sample}_R{read}_fastqc.zip', zip, sample=SAMPLES, read=READS),
+		expand(config['workdir'] + 'fastqc/{sample}_R{read}_fastqc.html', zip, sample=SAMPLES, read=READS),
+		expand(config['workdir'] + 'Kraken_Cleaned/{sample}_Kclean_R{read}.fastq', zip, sample=SAMPLES, read=READS),
+		expand(config['workdir'] + 'fastqc_Cleaned/{sample}_Kclean_R{read}_fastqc.zip', zip, sample=SAMPLES, read=READS),
+		expand(config['workdir'] + 'fastqc_Cleaned/{sample}_Kclean_R{read}_fastqc.html', zip, sample=SAMPLES, read=READS),
+		config['workdir'] + "read_lengths.csv"
+
+```
+
+
+
 # Protected and Temporary Files
 
 Output files can be marked as `protected` in the Snakefile and it will be 'locked' (write permissions removed) after creation so that it's harder to accidentally delete it.
