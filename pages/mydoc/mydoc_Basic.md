@@ -332,7 +332,7 @@ Now that you have a bit of experience with snakemake go ahead and write a new ru
 <details><summary>Answer</summary>
 <p>
 
-Your code should look something like this:
+Your code should look something like this:  
 
 ```
 # import packages for python in rule python_practice
@@ -434,11 +434,11 @@ rule fastqc_2:
 
 # Re-running Rules
 
-If you make a change and need to re-run a rule, there are a few options:
+If you make a change and need to re-run a rule, there are a few options:  
 
-1. If you modify any file that an output depends on, and then rerun snakemake, everything downstream from that file is re-run.  
+1. If you modify any file that an output depends on, and then rerun snakemake, everything downstream from that file is re-run.    
 
-For example, if we modify an output (for example 40457_Human_L001_R2.fastq) by running `touch files/40457_Human_L001_R2.fastq` at the command line this will update the time stamp on this file which then triggers a rerun of the `fastqc` and `python_practice` rules when `snakemake --cores 1` is run.
+For example, if we modify an output (for example 40457_Human_L001_R2.fastq) by running `touch files/40457_Human_L001_R2.fastq` at the command line this will update the time stamp on this file which then triggers a rerun of the `fastqc` and `python_practice` rules when `snakemake --cores 1` is run.  
 
 2. If you modify the code behind a rule, you can force the re-run of the rule by using the `-f` flag
 
@@ -447,23 +447,23 @@ snakemake -f python_practice --cores 1 # forces this step to run
 snakemake all --cores 1 # runs everything needed to get the files listed in the rule all:
 ```
 
-3. If you just want to re-run everything, you can use the `-F` flag. This forces a rule to run as well as every rule it depends on.  
+3. If you just want to re-run everything, you can use the `-F` flag. This forces a rule to run as well as every rule it depends on.    
 
 # "Checkpoints"
 
-There has been a time in which I want all my files to finish up to a certain rule before processing to the next rule. I don't know if this is the best way to do this, but I have created a rule that requires all my files as in the `input` using `expand()` and had it create a blank file that the next rule downstream required as `input:`. I could forsee errors with this so be careful...
+There has been a time in which I want all my files to finish up to a certain rule before processing to the next rule. I don't know if this is the best way to do this, but I have created a rule that requires all my files as in the `input` using `expand()` and had it create a blank file that the next rule downstream required as `input:`. I could forsee errors with this so be careful...  
 
 # Dynamic/Checkpoints
 
-Snakemake provides experimental support for dynamic files using the `dynamic()` function. Dynamic files can be used whenever one has a rule for which the number of output files is unknown before the rule was executed. 
+Snakemake provides experimental support for dynamic files using the `dynamic()` function. Dynamic files can be used whenever one has a rule for which the number of output files is unknown before the rule was executed.  
 
-Here is a [blog](http://ivory.idyll.org/blog/tag/python.html) on checkpoints/dynamic files. Snakemakes [documention](https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html) also covers this.
+Here is a [blog](http://ivory.idyll.org/blog/tag/python.html) on checkpoints/dynamic files. Snakemakes [documention](https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html) also covers this.  
 
-# Some Helpful Commands
+# Some Helpful Commands  
 
-There are lots of flags snakemake uses you can find a list [here](https://snakemake.readthedocs.io/en/stable/executing/cli.html)
+There are lots of flags snakemake uses you can find a list [here](https://snakemake.readthedocs.io/en/stable/executing/cli.html)  
 
-To list all the rules in the file run one of the following.
+To list all the rules in the file run one of the following.  
 
 ```
 snakemake --list
@@ -473,7 +473,7 @@ or
 snakemake -l
 ```
 
-To understand why each rule is being run use the `--reason` flag.
+To understand why each rule is being run use the `--reason` flag.  
 
 ```
 snakemake --reason
@@ -483,7 +483,7 @@ or
 snakemake -r
 ```
 
-To have snakemake go through a dry run of its workflow so you can make sure its doing what you want before you submit 100 jobs us the `--dryrun` flag. This will only show what would have been run without running any commands.
+To have snakemake go through a dry run of its workflow so you can make sure its doing what you want before you submit 100 jobs us the `--dryrun` flag. This will only show what would have been run without running any commands.  
 
 ```
 snakemake --dryrun 
@@ -495,12 +495,12 @@ To visualize your workflow you can generate a .png image with:
 snakemake --dag | dot -Tpng > dag.png
 ```
 
-In this case the DAG looks like this:
-![image of dag](/images/dag.png)
+In this case the DAG looks like this:  
+![image of dag](/images/dag.png)  
 
-# Keeping Things Tidy
+# Keeping Things Tidy  
 
-If you have a lot of paths that might change you can simply your snakefile my creating a `config.json` file. For example, we can create one that has a working directory defined.
+If you have a lot of paths that might change you can simply your snakefile my creating a `config.json` file. For example, we can create one that has a working directory defined.  
 
 ```
 {
@@ -508,7 +508,7 @@ If you have a lot of paths that might change you can simply your snakefile my cr
 }
 ```
 
-This can then be called within your snakefile like this (using rule all as an expample):
+This can then be called within your snakefile like this (using rule all as an expample):  
 
 ```
 configfile: '$PATH_TO_CONFIG/config.json'
@@ -526,11 +526,11 @@ rule all:
 
 
 
-# Protected and Temporary Files
+# Protected and Temporary Files  
 
-Output files can be marked as `protected` in the Snakefile and it will be 'locked' (write permissions removed) after creation so that it's harder to accidentally delete it.
+Output files can be marked as `protected` in the Snakefile and it will be 'locked' (write permissions removed) after creation so that it's harder to accidentally delete it.  
 
-Alternately, you can mark a file as `temp` and it will be deleted as soon as any rules that depend on it are run. This is a good way to automatically remove intermediate files that take up lots of hard disk space.
+Alternately, you can mark a file as `temp` and it will be deleted as soon as any rules that depend on it are run. This is a good way to automatically remove intermediate files that take up lots of hard disk space.  
 
 ```
 rule example_rule:
@@ -542,19 +542,19 @@ rule example_rule:
     script: "do_things.py"
 ```
 
-# Troubleshooting (AKA mistakes I made)
+# Troubleshooting (AKA mistakes I made)  
 
--  Snakemake will get mad if you have directories in the output (with no wildcard in them) if there are wildcards in other output files.
-If a rule’s inputs have wildcards then it expects all outputs to have a wildcard as well. Otherwise it duplicates it and it will make directories multiple times. 
+-  Snakemake will get mad if you have directories in the output (with no wildcard in them) if there are wildcards in other output files.  
+If a rule’s inputs have wildcards then it expects all outputs to have a wildcard as well. Otherwise it duplicates it and it will make directories multiple times.  
 
-Snakemake will give this error:
+Snakemake will give this error:   
 
 ```
 SyntaxError:
 Not all output, log and benchmark files of rule xxx contain the same wildcards. This is crucial though, in order to avoid that two or more jobs write to the same file.
 ```
 
-**Solution**: put directories under `params:` rather than `output`.
+**Solution**: put directories under `params:` rather than `output`.  
 
 If you get this error:
 
@@ -563,5 +563,5 @@ SyntaxError in line 4 of $PATH/Snakemake_Tutorial/Snakefile:
 EOF in multi-line statement (Snakefile, line XX)
 ```
 
-The most common cause is not having a comma after every line for your inputs and outputs. 
+The most common cause is not having a comma after every line for your inputs and outputs.   
 
