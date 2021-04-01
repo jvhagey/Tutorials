@@ -1,5 +1,5 @@
 ---
-title: "WDPB Landing Page"
+title: "Tutorials Landing Page"
 keywords: homepage
 tags: [getting_started]
 sidebar: mydoc_sidebar
