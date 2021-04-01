@@ -47,7 +47,7 @@ A wdl script is broken down into:
     - meta - The metadata associated with the workflow. This is important because as its part of [best practices](https://docs.dockstore.org/en/develop/advanced-topics/best-practices/wdl-best-practices.html). This information is parsed by [Dockstore](https://dockstore.org/search?searchMode=files) to allow for searching for wdls. 
     - parameter_meta - You can put and explanation for the expected inputs should be. See example [here​​​​​​​](https://github.com/openwdl/wdl/blob/main/versions/draft-2/SPEC.md#metadata-section).
     
-{% include image.html file="example_wdl.png" url="https://support.terra.bio/hc/en-us/articles/360037117492-Getting-Started-with-WDL" alt="wdl" caption="" max-width="600" %}
+{% include image.html file="example_wdl.png" url="https://support.terra.bio/hc/en-us/articles/360037117492-Getting-Started-with-WDL" alt="wdl" caption="Example of the different parts of a task." max-width="600" %}
 
 
 *Snakemake comparisions*  
@@ -665,6 +665,7 @@ This allows you to:
 - Break up wdl scripts that get too long
 - Alias a task to call it multiple times in the same script  
 - Import a common task into different wdl scripts (ie. QC used for most things) -- This is called "subworkflows"
+- Follow the convention of having tasks in a separate file from workflows and using import statements to call tasks into workflows.  
 
 To alias a task:
 
