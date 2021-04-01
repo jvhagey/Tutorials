@@ -56,14 +56,14 @@ entries:
       url: /mydoc_Server.html
       output: web, pdf
       
-- title: Cromwell and WDL
-  output: web, pdf
-  folderitems:
+  - title: Cromwell and WDL
+    output: web, pdf
+    folderitems:
     
-  - title: Cromwell
-    url: /mydoc_cromwell.html
-    output: web, pdf
+    - title: Cromwell
+      url: /mydoc_cromwell.html
+      output: web, pdf
       
-  - title: WDL 
-    url: /mydoc_wdl.html 
-    output: web, pdf
+    - title: WDL 
+      url: /mydoc_wdl.html 
+      output: web, pdf
