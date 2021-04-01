@@ -8,12 +8,7 @@ folder: mydoc
 The easiest way to install Snakemake (and other bioinformatics software) is via *conda*, which you get through Anaconda or miniconda.
 
 
-<div align="center"> 
-
-![Anaconda_Conda](images/MinicondavsAnaconda.webp "Ana_Mini")  
-**It is both a package and environment manager.**
-
-</div>
+{% include image.html file="MinicondavsAnaconda.webp" url="" alt="MinicondavsAnaconda" caption="" max-width="600" %}
 
 ```
 wget https://repo.anaconda.com/archive/Anaconda3-5.3.1-Linux-x86_64.sh
@@ -27,19 +22,9 @@ wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash Miniconda3-latest-Linux-x86_64.sh
 ```
 
-Installing Anaconda:
-
-[![asciicast](https://asciinema.org/a/388536.svg)](https://asciinema.org/a/388536)
-
-
 ### Why Conda?
 
-<div align="center"> 
-
-![Conda](images/conda_logo.svg "Conda Logo")  
-**It is both a package and environment manager.**
-
-</div>
+{% include image.html file="conda_logo.svg" url="https://docs.conda.io/en/latest/" alt="Conda_logo" caption="It is both a package and environment manager." max-width="600" %}
 
 Conda has the advantages:
 - Language agnostic   
@@ -72,8 +57,3 @@ Conda:
 | **Programs** | Included | Included | Included |  
 
 {% include important.html content="I swiped this cool table from Jiangwei Yao, Ph.D. who gave a training through OAMD titled *Building your own personal computing environment using Conda*." markdown="span" %}
-
-You can take the same training in [April](https://info.biotech.cdc.gov/info/events/building-your-own-personal-computing-environment-using-conda-seminar/).
-
-
-
