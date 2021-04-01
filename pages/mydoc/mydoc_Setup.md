@@ -75,7 +75,7 @@ source activate smake
 conda install snakemake
 ```
 
-## Creating Conda Environment
+## Version Control
 
 If you want a particular version you can search to see what is available:
 
