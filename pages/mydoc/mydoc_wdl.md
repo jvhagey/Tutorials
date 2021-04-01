@@ -8,7 +8,7 @@ folder: mydoc
 
 ## Pre-Tutorial Installation
 
-**To be able to run this tutorial** you will need to have installed cromwell, womtool, and wdltools. A method for install is found [here](https://git.biotech.cdc.gov/xxh5/wdpb_bioinformaticstrainings/-/blob/master/pages/mydoc/mydoc_cromwell.md).
+**To be able to run this tutorial** you will need to have installed cromwell, womtool, and wdltools. A method for install is found [here](https://jvhagey.github.io/Tutorials/mydoc_cromwell.html).
 
 {% include important.html content="Once we get to the portion of the tutorial for running Cromwell on different backends we can't use conda for that and will instead use the jar file..." markdown="span" %}
 
@@ -87,7 +87,10 @@ This will just output "Hello World" in hot pink as part of cromwell's output. Th
 
 ## Begin Tutorial
 
-Now we can run through a similar tutorial as we did with Snakemake this will start out with running fastqc on a forward and reverse read for one sample. I ran this on Aspen using a conda environment following [these instructions](https://xxh5.pages.biotech.cdc.gov/wdpb_bioinformaticstrainings/mydoc_cromwell.html). Anaconda and Conda are explained [here](https://xxh5.pages.biotech.cdc.gov/wdpb_bioinformaticstrainings/mydoc_Installation.html). 
+Now we can run through a similar tutorial as we did with Snakemake this will start out with running fastqc on a forward and reverse read for one sample. I ran this on Aspen using a conda environment following [these instructions](https://jvhagey.github.io/Tutorials/mydoc_cromwell.html). Anaconda and Conda are explained [here](https://jvhagey.github.io/Tutorials/mydoc_Installation.html). 
+
+
+{% include important.html content="**For the below file I had to change the full path to `$PATH` for security reasons so make sure you put the full path!!**" markdown="span" %}
 
 ```
 # version 1.0
@@ -98,20 +101,20 @@ workflow tutorial {
 }
 # Tasks #
 task fastqc {
-  File fastq_R1 = "/scicomp/home-pure/qpk9/TOAST/files/40457_Human_L001_R1.fastq"
-  File fastq_R2 = "/scicomp/home-pure/qpk9/TOAST/files/40457_Human_L001_R2.fastq"
+  File fastq_R1 = "/$PATH/files/40457_Human_L001_R1.fastq"
+  File fastq_R2 = "/$PATH/files/40457_Human_L001_R2.fastq"
   String base_name1 = sub(fastq_R1, '.fastq', '')
   String base_name2  = sub(fastq_R2, '.fastq', '')
   command {
     mkdir -p "/scicomp/home-pure/qpk9/TOAST/fastqc"
     module load fastqc/0.11.5
-    fastqc ${fastq_R1} -o "/scicomp/home-pure/qpk9/TOAST/fastqc"
-    fastqc ${fastq_R2} -o "/scicomp/home-pure/qpk9/TOAST/fastqc"
+    fastqc ${fastq_R1} -o "/$PATH/fastqc"
+    fastqc ${fastq_R2} -o "/$PATH/fastqc"
   output {
-    File fastqc_zip_1 = "/scicomp/home-pure/qpk9/TOAST/fastqc/${base_name1}_fastqc.html"
-    File fastqc_html_1 = "/scicomp/home-pure/qpk9/TOAST/fastqc/${base_name1}_fastqc.html"
-    File fastqc_zip_2 = "/scicomp/home-pure/qpk9/TOAST/fastqc/${base_name2}_fastqc.html"
-    File fastqc_html_2 = "/scicomp/home-pure/qpk9/TOAST/fastqc/${base_name2}_fastqc.html" 
+    File fastqc_zip_1 = "/$PATH/fastqc/${base_name1}_fastqc.html"
+    File fastqc_html_1 = "/$PATH/fastqc/${base_name1}_fastqc.html"
+    File fastqc_zip_2 = "/$PATH/fastqc/${base_name2}_fastqc.html"
+    File fastqc_html_2 = "/$PATH/fastqc/${base_name2}_fastqc.html" 
   }
 }
 ```
@@ -123,6 +126,8 @@ Notice we use the `sub()` function that allows us to replace ".fastq" with nothi
 Further information on the base structure of a wdl workflow can be found [here](https://support.terra.bio/hc/en-us/articles/360037118252).
 
 While this works, we need a way to make this work for more samples. So we will next make the script more general.  
+
+{% include important.html content="**For the below file I had to change the full path to `$PATH` for security reasons so make sure you put the full path!!**" markdown="span" %}
 
 ```
 workflow converted_smake {
@@ -147,16 +152,16 @@ task fastqc {
   String base_name1
   String base_name2
   command {
-    mkdir -p "/scicomp/home-pure/qpk9/TOAST/fastqc"
+    mkdir -p "/$PATH/fastqc"
     module load fastqc/0.11.5
-    fastqc ${fastq_R1} -o "/scicomp/home-pure/qpk9/TOAST/fastqc"
-    fastqc ${fastq_R2} -o "/scicomp/home-pure/qpk9/TOAST/fastqc"
+    fastqc ${fastq_R1} -o "/$PATH/fastqc"
+    fastqc ${fastq_R2} -o "/$PATH/fastqc"
   }
   output {
-    File fastqc_zip_1 = "/scicomp/home-pure/qpk9/TOAST/fastqc/${base_name1}_fastqc.zip"
-    File fastqc_html_1 = "/scicomp/home-pure/qpk9/TOAST/fastqc/${base_name1}_fastqc.html"
-    File fastqc_zip_2 = "/scicomp/home-pure/qpk9/TOAST/fastqc/${base_name2}_fastqc.zip"
-    File fastqc_html_2 = "/scicomp/home-pure/qpk9/TOAST/fastqc/${base_name2}_fastqc.html"
+    File fastqc_zip_1 = "/$PATH/fastqc/${base_name1}_fastqc.zip"
+    File fastqc_html_1 = "/$PATH/fastqc/${base_name1}_fastqc.html"
+    File fastqc_zip_2 = "/$PATH/fastqc/${base_name2}_fastqc.zip"
+    File fastqc_html_2 = "/$PATH/fastqc/${base_name2}_fastqc.html"
   }
 }
 ```
@@ -195,13 +200,15 @@ Which looks like this:
 }
 ```
 
-Open this file in a text editor and add in the location for the files of interest. *Make sure you provide FULL PATH to fastq files!* 
+Open this file in a text editor and add in the location for the files of interest. **Make sure you provide FULL PATH to fastq files!** 
+
+{% include important.html content="**For the below file I had to change the full path to `$PATH` for security reasons so make sure you put the full path!!**" markdown="span" %}
 
 ```
 {
-  "converted_smake.fastq_R1": "/scicomp/home-pure/qpk9/TOAST/files/40457_Human_L001_R1.fastq",
+  "converted_smake.fastq_R1": "/$PATH/files/40457_Human_L001_R1.fastq",
   "converted_smake.base_name2": "40457_Human_L001_R2",
-  "converted_smake.fastq_R2": "/scicomp/home-pure/qpk9/TOAST/files/40457_Human_L001_R2.fastq",
+  "converted_smake.fastq_R2": "/$PATH/files/40457_Human_L001_R2.fastq",
   "converted_smake.base_name1": "40457_Human_L001_R1"
 }
 ```
@@ -223,9 +230,12 @@ cromwell run Converted_SM.wdl --inputs convert_sm.inputs.json
 
 I like to make workflows that only require changing a working directory and allowing it to build the file structure for me. So the first step will be that I change our json file. 
 
+{% include important.html content="**For the below file I had to change the full path to `$PATH` for security reasons so make sure you put the full path!!**" markdown="span" %}
+
+
 ```
 {
-  "converted_smake.workdir" : "/scicomp/home-pure/qpk9/TOAST/Tutorial",
+  "converted_smake.workdir" : "/$PATH/Tutorial",
   "converted_smake.fastq_R1": "40457_Human_L001_R1.fastq",
   "converted_smake.fastq_R2": "40457_Human_L001_R2.fastq"
 }
@@ -339,7 +349,7 @@ task Fastqc {
   }
 }
 ```
-Here we state that we don't just have a file, but an array of paired files with `Array[Pair[File, File]] fastq_files_paired`. We will also use `scatter (sample in fastq_files_paired) {​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​}` to loop through each sample. ​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​
+Here we state that we don't just have a file, but an array of paired files with `Array[Pair[File, File]] fastq_files_paired`. We will also use `scatter (sample in fastq_files_paired) {}` to loop through each sample.
 Our DAG from this workflow looks like this:
 {% include image.html file="scatter.png" url="https://support.terra.bio/hc/en-us/articles/360037128572-Scatter-Gather-Parallelism" alt="scatter" caption="" max-width="600" %}
 
@@ -618,7 +628,7 @@ task Kraken {
   command {
     mkdir -p ${krakendir}
     module load kraken/2.0.8
-    kraken2 --use-names --threads 10 --db /scicomp/home-pure/qpk9/Kraken_DB/Updated_DB/ --report ${krakendir}/${base_name}_report.txt --paired ${fastq_R1} ${fastq_R2} --output ${​​​​​krakendir}​​​​​/${​​​​​base_name}​​​​​.kraken
+    kraken2 --use-names --threads 10 --db /scicomp/home-pure/qpk9/Kraken_DB/Updated_DB/ --report ${krakendir}/${base_name}_report.txt --paired ${fastq_R1} ${fastq_R2} --output ${krakendir}/${base_name}kraken
   }
   output {
     File kraken = "${krakendir}" + "/${base_name}.kraken"
@@ -635,7 +645,7 @@ task Clean_Kraken {
   File report
   command {
     mkdir -p ${clean_kraken_dir}
-    python /scicomp/home-pure/qpk9/bin/KrakenTools-master/extract_kraken_reads.py --include-children --fastq-output --taxid 5806 -s ${fastq_R1} -s2 ${fastq_R2} -o ${clean_kraken_dir}​​​​​/${​​​​​base_name}​​​​​_Kclean_R1.fastq -o2 ${​​​​​clean_kraken_dir}​​​​​/${​​​​​base_name}​​​​​_Kclean_R2.fastq --report ${​​​​​report}​​​​​ -k ${​​​​​kraken}​​​​​
+    python /scicomp/home-pure/qpk9/bin/KrakenTools-master/extract_kraken_reads.py --include-children --fastq-output --taxid 5806 -s ${fastq_R1} -s2 ${fastq_R2} -o ${clean_kraken_dir}/${base_name}_Kclean_R1.fastq -o2 ${clean_kraken_dir}/${base_name}_Kclean_R2.fastq --report ${report} -k ${kraken}
   }
   output {
     File k_file_1 = "${clean_kraken_dir}" + "/${base_name}_Kclean_R1.fastq"
@@ -644,7 +654,7 @@ task Clean_Kraken {
 }
 ```
 
-The "big" difference here is we is that we link the input of `clean_kraken` from the task `Kraken` in the using the syntax `kraken = Kraken.kraken, report = Kraken.report` in the `workflow` portion like we did with the `multiqc`​​​​​​ task.
+The "big" difference here is we is that we link the input of `clean_kraken` from the task `Kraken` in the using the syntax `kraken = Kraken.kraken, report = Kraken.report` in the `workflow` portion like we did with the `multiqc` task.
 
 ## Other Pipeline patterns
 Other pipeline patters are addressed [here](https://support.terra.bio/hc/en-us/articles/360037486731-Add-Plumbing). 
@@ -710,10 +720,12 @@ To do this, we are adding an input type called `Array`. Within the workflow we s
  
 Arrays just look like a python list. 
 
+{% include important.html content="**For the below file I had to change the full path to `$PATH` for security reasons so make sure you put the full path!!**" markdown="span" %}
+
 ```
 {
-  "converted_smake.workdir" : "/scicomp/home-pure/qpk9/TOAST/Tutorial",
-  "converted_smake.fastq_files": ["/scicomp/home-pure/qpk9/TOAST/files/40457_Human_L001_R2.fastq","/scicomp/home-pure/qpk9/TOAST/files/40457_Human_L001_R1.fastq","/scicomp/home-pure/qpk9/TOAST/files/41573_Cow_L001_R2.fastq","/scicomp/home-pure/qpk9/TOAST/files/41573_Cow_L001_R1.fastq"],
+  "converted_smake.workdir" : "/$PATH/Tutorial",
+  "converted_smake.fastq_files": ["/$PATH/files/40457_Human_L001_R2.fastq","/$PATH/files/40457_Human_L001_R1.fastq","/$PATH/files/41573_Cow_L001_R2.fastq","/$PATH/files/41573_Cow_L001_R1.fastq"],
   "converted_smake.fastq_files_paired": [
     {left": "40457_Human_L001_R1.fastq", "right": "40457_Human_L001_R2.fastq"},
     {left": "41573_Cow_L001_R1.fastq", "right": "41573_Cow_L001_R2.fastq"}
@@ -880,7 +892,7 @@ task Kraken {
   command {
     mkdir -p ${krakendir}
     module load kraken/2.0.8
-    kraken2 --use-names --threads 10 --db /scicomp/home-pure/qpk9/Kraken_DB/Updated_DB/ --report ${krakendir}/${base_name}_report.txt --paired ${fastq_R1} ${fastq_R2} --output ${krakendir}/${base_name}.kraken
+    kraken2 --use-names --threads 10 --db /$PATH/Kraken_DB/Updated_DB/ --report ${krakendir}/${base_name}_report.txt --paired ${fastq_R1} ${fastq_R2} --output ${krakendir}/${base_name}.kraken
   }
   output {
     File kraken = "${krakendir}" + "/${base_name}kraken"
@@ -897,7 +909,7 @@ task Clean_Kraken {
   File report
   command {
     mkdir -p ${clean_kraken_dir}
-    python /scicomp/home-pure/qpk9/bin/KrakenTools-master/extract_kraken_reads.py --include-children --fastq-output --taxid 5806 -s ${fastq_R1} -s2 ${fastq_R2} -o ${clean_kraken_dir}/${base_name}_Kclean_R1.fastq -o2 ${clean_kraken_dir}/${base_name}_Kclean_R2.fastq --report ${report} -k ${kraken}
+    python /$PATH/KrakenTools-master/extract_kraken_reads.py --include-children --fastq-output --taxid 5806 -s ${fastq_R1} -s2 ${fastq_R2} -o ${clean_kraken_dir}/${base_name}_Kclean_R1.fastq -o2 ${clean_kraken_dir}/${base_name}_Kclean_R2.fastq --report ${report} -k ${kraken}
   }
   output {
     File k_file_1 = "${clean_kraken_dir}" + "/${base_name}_Kclean_R1.fastq"
@@ -913,7 +925,7 @@ Cool, we have figured out how to run our python scripts now we will run some bas
 Here is our DAG for this workflow.  
 {% include image.html file="Bash.png" url="" alt="Bash" caption="" max-width="600" %}
 
-Next we will do a similar example with bash, in which we will open the `read_lengths.csv` file that was created and then extract the 3rd column using cut like this `cat ${​​​​​​​​​​read_lengths}​​​​​​​​​​ | cut -d, -f3`. 
+Next we will do a similar example with bash, in which we will open the `read_lengths.csv` file that was created and then extract the 3rd column using cut like this `cat ${read_lengths} | cut -d, -f3`. 
 
 The full workflow looks like this now:
 
