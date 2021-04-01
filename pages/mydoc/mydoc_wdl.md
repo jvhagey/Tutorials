@@ -1103,7 +1103,7 @@ command<<<
     code
 >>>
 ```
-Also, we use the output from the task `python_practice` by `call bash_practice {​input: read_lengths = python_practice.read_lengths}​` in the workflow.
+Also, we use the output from the task `python_practice` by `call bash_practice {input: read_lengths = python_practice.read_lengths}` in the workflow.
 
 The output of our task was written to the stdout file that is found at:
 
@@ -1136,7 +1136,7 @@ dot -Tpng input.dot > output.png
  
 Note here that `e35c4a3b-cecb-4956-8724-77ebafe03bfb` is a random folder that you can either get from the output of cromwell or just the most recent one in that folder. You also need to add your `workflow name` and the `task name`.
 
-{% include image.html file="path.png" url="" alt="path" caption="" max-width="600" %}
+{% include image.html file="path.PNG" url="" alt="path" caption="" max-width="600" %}
 
 2. If your error is something like this:
 
