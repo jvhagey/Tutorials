@@ -101,8 +101,8 @@ workflow tutorial {
 }
 # Tasks #
 task fastqc {
-  File fastq_R1 = "/$PATH/files/40457_Human_L001_R1.fastq"
-  File fastq_R2 = "/$PATH/files/40457_Human_L001_R2.fastq"
+  File fastq_R1 = "/$PATH/files/Sample_123_L001_R1.fastq"
+  File fastq_R2 = "/$PATH/files/Sample_123_L001_R2.fastq"
   String base_name1 = sub(fastq_R1, '.fastq', '')
   String base_name2  = sub(fastq_R2, '.fastq', '')
   command {
@@ -206,10 +206,10 @@ Open this file in a text editor and add in the location for the files of interes
 
 ```
 {
-  "converted_smake.fastq_R1": "/$PATH/files/40457_Human_L001_R1.fastq",
-  "converted_smake.base_name2": "40457_Human_L001_R2",
-  "converted_smake.fastq_R2": "/$PATH/files/40457_Human_L001_R2.fastq",
-  "converted_smake.base_name1": "40457_Human_L001_R1"
+  "converted_smake.fastq_R1": "/$PATH/files/Sample_123_L001_R1.fastq",
+  "converted_smake.base_name2": "Sample_123_L001_R2",
+  "converted_smake.fastq_R2": "/$PATH/files/Sample_123_L001_R2.fastq",
+  "converted_smake.base_name1": "Sample_123_L001_R1"
 }
 ```
 
@@ -236,8 +236,8 @@ I like to make workflows that only require changing a working directory and allo
 ```
 {
   "converted_smake.workdir" : "/$PATH/Tutorial",
-  "converted_smake.fastq_R1": "40457_Human_L001_R1.fastq",
-  "converted_smake.fastq_R2": "40457_Human_L001_R2.fastq"
+  "converted_smake.fastq_R1": "Sample_123_L001_R1.fastq",
+  "converted_smake.fastq_R2": "Sample_123_L001_R2.fastq"
 }
 ```
 
@@ -304,8 +304,8 @@ Here we will use an `Array` that contains pairs so our json now looks like this:
 {
   "tutorial.workdir" : "/scicomp/home-pure/qpk9/TOAST/Tutorial",
   "tutorial.fastq_files_paired": [
-    {"left": "40457_Human_L001_R1.fastq", "right": "40457_Human_L001_R2.fastq"},
-    {"left": "41573_Cow_L001_R1.fastq", "right": "41573_Cow_L001_R2.fastq"}  ]
+    {"left": "Sample_123_L001_R1.fastq", "right": "Sample_123_L001_R2.fastq"},
+    {"left": "Sample_456_L001_R1.fastq", "right": "Sample_456_L001_R2.fastq"}  ]
 }
 ```
 The syntax we use in the workflow is `Array[Pair[File, File]]`
@@ -726,10 +726,10 @@ Arrays just look like a python list.
 ```
 {
   "converted_smake.workdir" : "/$PATH/Tutorial",
-  "converted_smake.fastq_files": ["/$PATH/files/40457_Human_L001_R2.fastq","/$PATH/files/40457_Human_L001_R1.fastq","/$PATH/files/41573_Cow_L001_R2.fastq","/$PATH/files/41573_Cow_L001_R1.fastq"],
+  "converted_smake.fastq_files": ["/$PATH/files/Sample_123_L001_R2.fastq","/$PATH/files/Sample_123_L001_R1.fastq","/$PATH/files/Sample_456_L001_R2.fastq","/$PATH/files/Sample_456_L001_R1.fastq"],
   "converted_smake.fastq_files_paired": [
-    {left": "40457_Human_L001_R1.fastq", "right": "40457_Human_L001_R2.fastq"},
-    {left": "41573_Cow_L001_R1.fastq", "right": "41573_Cow_L001_R2.fastq"}
+    {left": "Sample_123_L001_R1.fastq", "right": "Sample_123_L001_R2.fastq"},
+    {left": "Sample_456_L001_R1.fastq", "right": "Sample_456_L001_R2.fastq"}
   ]
 }
 ```
