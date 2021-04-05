@@ -608,7 +608,7 @@ If you make a change and need to re-run a rule, there are a few options:
 
 1. If you modify any file that an output depends on, and then rerun snakemake, everything downstream from that file is re-run.  
 
-For example, if we modify an output (for example 40457_Human_L001_R2.fastq) by running `touch files/40457_Human_L001_R2.fastq` at the command line this will update the time stamp on this file which then triggers a rerun of the `fastqc` and `python_practice` rules when `snakemake --cores 1` is run.
+For example, if we modify an output (for example Sample_123_L001_R2.fastq) by running `touch files/Sample_123_L001_R2.fastq` at the command line this will update the time stamp on this file which then triggers a rerun of the `fastqc` and `python_practice` rules when `snakemake --cores 1` is run.
 
 2. If you modify the code behind a rule, you can force the re-run of the rule by using the `-f` flag  
 
