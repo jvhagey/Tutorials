@@ -188,14 +188,14 @@ rule fastqc:
 		'''
 ```
 
-However, if we have run snakemake with `snakemake fastqc/40457_Human_L001_R1_fastqc.html --cores 1` it will tell us there is nothing to be done because it fills in the wildcards based on what it finds in the output files which is only `fastqc/40457_Human_L001_R1_fastqc.zip and fastqc/40457_Human_L001_R1_fastqc.html`. However, if we delete these files and run snakemake with `snakemake fastqc/40457_Human_L001_R1_fastqc.html --cores 1` we will get the following error.
+However, if we have run snakemake with `snakemake fastqc/Sample_123_L001_R1_fastqc.html --cores 1` it will tell us there is nothing to be done because it fills in the wildcards based on what it finds in the output files which is only `fastqc/Sample_123_L001_R1_fastqc.zip and fastqc/Sample_123_L001_R1_fastqc.html`. However, if we delete these files and run snakemake with `snakemake fastqc/Sample_123_L001_R1_fastqc.html --cores 1` we will get the following error.
 
 ```
 WorkflowError:
 Target rules may not contain wildcards. Please specify concrete files or a rule without wildcards.
 ```
 
-This same error would have happened if you had ran `snakemake --cores 1` because snakemake doesn't know what file you want or if you want all of them. We can either just ask for only one file with `snakemake fastqc/41573_Cow_L001_R1_fastqc.zip --cores 1` for example, or create a new rule called `rule all:` that will allow us to tell snakemake that we want all the files (or whichever we want). The `rule all` will be put as the first rule in our snakefile by convention so we can keep track of it easier. 
+This same error would have happened if you had ran `snakemake --cores 1` because snakemake doesn't know what file you want or if you want all of them. We can either just ask for only one file with `snakemake fastqc/Sample_456_L001_R1_fastqc.zip --cores 1` for example, or create a new rule called `rule all:` that will allow us to tell snakemake that we want all the files (or whichever we want). The `rule all` will be put as the first rule in our snakefile by convention so we can keep track of it easier. 
 
 ```
 rule all:
@@ -257,6 +257,10 @@ rule fastqc:
 		fastqc {input.file} -o {params.outdir}
 		'''
 ```
+
+So now our dag is:
+
+{% include image.html file="fastq.png" url="" alt="fastq" caption="" max-width="600" %}
 
 You could also explicity state what the wildcards will be instead:
 
@@ -663,6 +667,8 @@ snakemake --dag | dot -Tpng > dag.png
 
 In this case the DAG looks like this:
 ![image of dag](/images/dag.png)
+
+It should be noted that dag drawing won't like it if you have print statements directly in the Snakefile and not in a rule. 
 
 ## Keeping Things Tidy
 
