@@ -45,7 +45,7 @@ A wdl script is broken down into:
     - runtime - These are the resources that you will need to execute your command. This is were you will add your docker image if you are using one. 
       - Note that not all runtime attributes are recognized depending on the backend you are using. See list [here](https://cromwell.readthedocs.io/en/stable/RuntimeAttributes/). 
     - meta - The metadata associated with the workflow. This is important because as its part of [best practices](https://docs.dockstore.org/en/develop/advanced-topics/best-practices/wdl-best-practices.html). This information is parsed by [Dockstore](https://dockstore.org/search?searchMode=files) to allow for searching for wdls. 
-    - parameter_meta - You can put and explanation for the expected inputs should be. See example [here​​​​​​​](https://github.com/openwdl/wdl/blob/main/versions/draft-2/SPEC.md#metadata-section).
+    - parameter_meta - You can put and explanation for the expected inputs should be. See example [here](https://github.com/openwdl/wdl/blob/main/versions/draft-2/SPEC.md#metadata-section).
     
 {% include image.html file="example_wdl.png" url="https://support.terra.bio/hc/en-us/articles/360037117492-Getting-Started-with-WDL" alt="wdl" caption="Example of the different parts of a task." max-width="600" %}
 
@@ -294,8 +294,8 @@ Now that we have a workflow up and running we will want to get it running on mul
     - Arrays inside of a json look like this:  
     ```
     {
-    "tutorial.workdir" : "/scicomp/home-pure/qpk9/TOAST/Tutorial",
-    "tutorial.fastq_files": ["40457_Human_L001_R2.fastq","40457_Human_L001_R1.fastq","41573_Cow_L001_R2.fastq","41573_Cow_L001_R1.fastq"]
+    "tutorial.workdir" : "/$PATH/Tutorial",
+    "tutorial.fastq_files": ["Sample_123_L001_R2.fastq","Sample_123_L001_R1.fastq","Sample_456_L001_R2.fastq","Sample_456_L001_R1.fastq"]
     }
     ```
 Here we will use an `Array` that contains pairs so our json now looks like this:
@@ -518,7 +518,7 @@ task Kraken {
   command {
     mkdir -p ${krakendir}
     module load kraken/2.0.8
-    kraken2 --use-names --threads 10 --db /scicomp/home-pure/qpk9/Kraken_DB/Updated_DB/ --report ${krakendir}/${base_name}_report.txt --paired ${fastq_R1} ${fastq_R2} --output ${krakendir}/${base_name.kraken
+    kraken2 --use-names --threads 10 --db /$PATH/Kraken_DB/Updated_DB/ --report ${krakendir}/${base_name}_report.txt --paired ${fastq_R1} ${fastq_R2} --output ${krakendir}/${base_name.kraken
   }
   output {
     File kraken = "${krakendir}" + "/${base_name}.kraken"
@@ -628,7 +628,7 @@ task Kraken {
   command {
     mkdir -p ${krakendir}
     module load kraken/2.0.8
-    kraken2 --use-names --threads 10 --db /scicomp/home-pure/qpk9/Kraken_DB/Updated_DB/ --report ${krakendir}/${base_name}_report.txt --paired ${fastq_R1} ${fastq_R2} --output ${krakendir}/${base_name}kraken
+    kraken2 --use-names --threads 10 --db /$PATH/Kraken_DB/Updated_DB/ --report ${krakendir}/${base_name}_report.txt --paired ${fastq_R1} ${fastq_R2} --output ${krakendir}/${base_name}kraken
   }
   output {
     File kraken = "${krakendir}" + "/${base_name}.kraken"
@@ -645,7 +645,7 @@ task Clean_Kraken {
   File report
   command {
     mkdir -p ${clean_kraken_dir}
-    python /scicomp/home-pure/qpk9/bin/KrakenTools-master/extract_kraken_reads.py --include-children --fastq-output --taxid 5806 -s ${fastq_R1} -s2 ${fastq_R2} -o ${clean_kraken_dir}/${base_name}_Kclean_R1.fastq -o2 ${clean_kraken_dir}/${base_name}_Kclean_R2.fastq --report ${report} -k ${kraken}
+    python /$PATH/bin/KrakenTools-master/extract_kraken_reads.py --include-children --fastq-output --taxid 5806 -s ${fastq_R1} -s2 ${fastq_R2} -o ${clean_kraken_dir}/${base_name}_Kclean_R1.fastq -o2 ${clean_kraken_dir}/${base_name}_Kclean_R2.fastq --report ${report} -k ${kraken}
   }
   output {
     File k_file_1 = "${clean_kraken_dir}" + "/${base_name}_Kclean_R1.fastq"
@@ -910,7 +910,7 @@ task Clean_Kraken {
   File report
   command {
     mkdir -p ${clean_kraken_dir}
-    python /$PATH/KrakenTools-master/extract_kraken_reads.py --include-children --fastq-output --taxid 5806 -s ${fastq_R1} -s2 ${fastq_R2} -o ${clean_kraken_dir}/${base_name}_Kclean_R1.fastq -o2 ${clean_kraken_dir}/${base_name}_Kclean_R2.fastq --report ${report} -k ${kraken}
+    python /$PATH/bin/KrakenTools-master/extract_kraken_reads.py --include-children --fastq-output --taxid 5806 -s ${fastq_R1} -s2 ${fastq_R2} -o ${clean_kraken_dir}/${base_name}_Kclean_R1.fastq -o2 ${clean_kraken_dir}/${base_name}_Kclean_R2.fastq --report ${report} -k ${kraken}
   }
   output {
     File k_file_1 = "${clean_kraken_dir}" + "/${base_name}_Kclean_R1.fastq"
@@ -1071,7 +1071,7 @@ task Kraken {
   command {
     mkdir -p ${krakendir}
     module load kraken/2.0.8
-    kraken2 --use-names --threads 10 --db /scicomp/home-pure/qpk9/Kraken_DB/Updated_DB/ --report ${krakendir}/${base_name}_report.txt --paired ${fastq_R1} ${fastq_R2} --output ${krakendir}/${base_name}.kraken
+    kraken2 --use-names --threads 10 --db /$PATH/Kraken_DB/Updated_DB/ --report ${krakendir}/${base_name}_report.txt --paired ${fastq_R1} ${fastq_R2} --output ${krakendir}/${base_name}.kraken
   }
   output {
     File kraken = "${krakendir}" + "/${base_name}.kraken"
@@ -1088,7 +1088,7 @@ task Clean_Kraken {
   File report
   command {
     mkdir -p ${clean_kraken_dir}
-    python /scicomp/home-pure/qpk9/bin/KrakenTools-master/extract_kraken_reads.py --include-children --fastq-output --taxid 5806 -s ${fastq_R1} -s2 ${fastq_R2} -o ${clean_kraken_dir}/${base_name}_Kclean_R1.fastq -o2 ${clean_kraken_dir}/${base_name}_Kclean_R2.fastq --report ${report} -k ${kraken}
+    python /$PATH/bin/KrakenTools-master/extract_kraken_reads.py --include-children --fastq-output --taxid 5806 -s ${fastq_R1} -s2 ${fastq_R2} -o ${clean_kraken_dir}/${base_name}_Kclean_R1.fastq -o2 ${clean_kraken_dir}/${base_name}_Kclean_R2.fastq --report ${report} -k ${kraken}
   }
   output {
     File k_file_1 = "${clean_kraken_dir}" + "/${base_name}_Kclean_R1.fastq"
@@ -1218,7 +1218,7 @@ backend {
 
 Now pass it to cromwell (non conda environment version):
  
-`java -Dconfig.file=your.conf -jar /scicomp/home-pure/qpk9/bin/cromwell-59.jar run Tutorial.wdl -i Tutorial.inputs.json`
+`java -Dconfig.file=your.conf -jar /$PATH/bin/cromwell-59.jar run Tutorial.wdl -i Tutorial.inputs.json`
  
 The default runtime parameters (AKA resources) will look something like this in the cromwell output:
 
@@ -1228,14 +1228,14 @@ The default runtime parameters (AKA resources) will look something like this in 
 -V \
 -b y \
 -N cromwell_800901c8_myTask \
--wd /scicomp/home-pure/qpk9/TOAST/cromwell-executions/testing_SGE/800901c8-fd24-4429-acc9-3ecb46f7c51c/call-myTask \
--o /scicomp/home-pure/qpk9/TOAST/cromwell-executions/testing_SGE/800901c8-fd24-4429-acc9-3ecb46f7c51c/call-myTask/execution/stdout \
--e /scicomp/home-pure/qpk9/TOAST/cromwell-executions/testing_SGE/800901c8-fd24-4429-acc9-3ecb46f7c51c/call-myTask/execution/stderr \
+-wd /$PATH/TOAST/cromwell-executions/testing_SGE/800901c8-fd24-4429-acc9-3ecb46f7c51c/call-myTask \
+-o /$PATH/TOAST/cromwell-executions/testing_SGE/800901c8-fd24-4429-acc9-3ecb46f7c51c/call-myTask/execution/stdout \
+-e /$PATH/TOAST/cromwell-executions/testing_SGE/800901c8-fd24-4429-acc9-3ecb46f7c51c/call-myTask/execution/stderr \
 -pe smp 1 \
 -l mem_free=10.0g \
  \
  \
-/usr/bin/env bash /scicomp/home-pure/qpk9/TOAST/cromwell-executions/testing_SGE/800901c8-fd24-4429-acc9-3ecb46f7c51c/call-myTask/execution/script
+/usr/bin/env bash /$PATH/cromwell-executions/testing_SGE/800901c8-fd24-4429-acc9-3ecb46f7c51c/call-myTask/execution/script
 [2021-03-30 16:36:14,81] [info] DispatchedConfigAsyncJobExecutionActor [800901c8testing_SGE.myTask:NA:1]: job id: 9000049
 [2021-03-30 16:36:14,82] [info] DispatchedConfigAsyncJobExecutionActor [800901c8testing_SGE.myTask:NA:1]: Cromwell will watch for an rc file but will *not* double-check whether this job is actually alive (unless Cromwell restarts)
 ```
@@ -1277,14 +1277,14 @@ Here we changed the standard 10GB of memory and 1cpu to 5GB and 2cpus. Now when 
 -V \
 -b y \
 -N cromwell_b1745a9d_myTask \
--wd /scicomp/home-pure/qpk9/TOAST/cromwell-executions/testing_SGE/b1745a9d-7b22-45db-bb02-7e75c2ed0b44/call-myTask \
--o /scicomp/home-pure/qpk9/TOAST/cromwell-executions/testing_SGE/b1745a9d-7b22-45db-bb02-7e75c2ed0b44/call-myTask/execution/stdout \
--e /scicomp/home-pure/qpk9/TOAST/cromwell-executions/testing_SGE/b1745a9d-7b22-45db-bb02-7e75c2ed0b44/call-myTask/execution/stderr \
+-wd /$PATH/cromwell-executions/testing_SGE/b1745a9d-7b22-45db-bb02-7e75c2ed0b44/call-myTask \
+-o /$PATH/cromwell-executions/testing_SGE/b1745a9d-7b22-45db-bb02-7e75c2ed0b44/call-myTask/execution/stdout \
+-e /$PATH/cromwell-executions/testing_SGE/b1745a9d-7b22-45db-bb02-7e75c2ed0b44/call-myTask/execution/stderr \
 -pe smp 2 \
 -l mem_free=5.0g \
  \
  \
-/usr/bin/env bash /scicomp/home-pure/qpk9/TOAST/cromwell-executions/testing_SGE/b1745a9d-7b22-45db-bb02-7e75c2ed0b44/call-myTask/execution/script
+/usr/bin/env bash /$PATH/TOAST/cromwell-executions/testing_SGE/b1745a9d-7b22-45db-bb02-7e75c2ed0b44/call-myTask/execution/script
 [2021-03-30 16:39:17,86] [info] DispatchedConfigAsyncJobExecutionActor [b1745a9dtesting_SGE.myTask:NA:1]: job id: 9000050
 [2021-03-30 16:39:17,87] [info] DispatchedConfigAsyncJobExecutionActor [b1745a9dtesting_SGE.myTask:NA:1]: Cromwell will watch for an rc file but will *not* double-check whether this job is actually alive (unless Cromwell restarts)
 ```
