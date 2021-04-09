@@ -28,6 +28,14 @@ entries:
       output: web, pdf
       type: homepage
       
+  - title: Installing WSL
+    output: web, pdf
+    folderitems:
+    
+    - title: Installation WSL
+      url: /mydoc_wsl.html
+      output: web, pdf
+
   - title: Anaconda and Conda
     output: web, pdf
     folderitems:
