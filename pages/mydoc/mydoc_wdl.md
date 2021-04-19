@@ -1111,57 +1111,363 @@ The output of our task was written to the stdout file that is found at:
  `/$PATH/cromwell-executions/Tutorial/5b32bbae-ab73-46e7-99a9-e0f08475301e/call-bash_practice/execution/stdout`
  
  
-## Running With Containers
+## Running with Containers
 
-Cromwell has documentation on how to add containers to your workflow.
+### Docker 
 
-Currently, StaPH-B has built many containers that are available on dockerhub, the source repository for these is on staph-B's github page. You can find all of the containers on hub.docker.com then search for "staphb".
+Cromwell has [documentation](https://cromwell.readthedocs.io/en/develop/tutorials/Containers/#:~:text=Docker%20is%20a%20popular%20container%20technology%20that%20is,for%20Linux%2C%20Mac%20or%20Windows%20from%20Docker%20Hub) on how to add containers to your workflow.
+ 
+Currently, StaPH-B has built many containers that are available on [dockerhub](https://hub.docker.com/r/staphb/), the source repository for these is on staph-B's [github page](https://github.com/StaPH-B/docker-builds). You can find all of the containers on [hub.docker.com](https://hub.docker.com/) by search for "staphb".
+ 
+wdl is configured to work with docker hub so we can swap out the module load portion of the tutorial and just pull in a docker container to run fastqc for us. This allows for reproducibility. Make sure you specify the version of fastqc if not then docker will just pull the latest one version of the container, but that will change so it won't be reproducible then. 
 
-wdl is configured to work with docker hub so we can swap out the module load portion of the tutorial and just pull in a docker container to run fastqc for us. This allows for reproducibility. 
+{% include warning.html content="We CANNOT make directories as we did before though. There is an issue with how the container is mounted by cromwell (I think)." markdown="span" %}
 
 ```
 workflow tutorial {
-  String workdir
-  Array[File] fastq_files
-  Array[Pair[File, File]] fastq_files_paired
-  scatter (sample in fastq_files_paired) {
-    call Fastqc {
-      input:
-        workdir = workdir,
-        fastq_R1 = workdir + "/files/" + sample.left,
-        fastq_R2 = workdir + "/files/" + sample.right,
-        base_name1 = basename(sample.left, ".fastq"),
-        base_name2 = basename(sample.right, ".fastq"),
-        fastqcdir = workdir + "/fastqc_container"
-    }
-  }
+  String workdir
+  Array[File] fastq_files
+  Array[Pair[File, File]] fastq_files_paired
+  scatter (sample in fastq_files_paired) {
+    call Fastqc {
+      input:
+        workdir = workdir,
+        fastq_R1 = workdir + "/files/" + sample.left,
+        fastq_R2 = workdir + "/files/" + sample.right,
+        base_name1 = basename(sample.left, ".fastq"),
+        base_name2 = basename(sample.right, ".fastq"),
+    }
+  }
 }
 
 task Fastqc {
-  File fastq_R1
-  File fastq_R2
-  String base_name1
-  String base_name2
-  String workdir
-  String fastqcdir
-  command {
-    mkdir -p ${fastqcdir}
-    fastqc ${fastq_R1} -o ${fastqcdir}
-    fastqc ${fastq_R2} -o ${fastqcdir}
-  }
-  output {
-    File fastqc_zip_1 = "${workdir}" + "/fastqc/${base_name1}_fastqc.zip"
-    File fastqc_html_1 = "${workdir}" + "/fastqc/${base_name1}_fastqc.html"
-    File fastqc_zip_2 = "${workdir}" + "/fastqc/${base_name2}_fastqc.zip"
-    File fastqc_html_2 = "${workdir}" + "/fastqc/${base_name2}_fastqc.html"
-  }
-  runtime {
-    docker: "staphb/fastqc:0.11.8"
-  }
+  File fastq_R1
+  File fastq_R2
+  String base_name1
+  String base_name2
+  String workdir
+  command {
+    fastqc ${fastq_R1} -o .
+    fastqc ${fastq_R2} -o .
+  }
+  output {
+    File fastqc_zip_1 = "${base_name1}_fastqc.zip"
+    File fastqc_html_1 = "${base_name1}_fastqc.html"
+    File fastqc_zip_2 = "${base_name2}_fastqc.zip"
+    File fastqc_html_2 = "${base_name2}_fastqc.html"
+  }
+  runtime {
+    docker: "staphb/fastqc:0.11.8"
+  }
 }
 ```
 
-It's just that easy! **Unless** you are running docker on wsl for windows :( head over the wsl page for a [troubleshooting guide](https://jvhagey.github.io/Tutorials/mydoc_wdl.html). 
+`/$PATH/cromwell-executions/$workflow_name/1baab3f6-fca1-4eab-980a-78b33e9af11f/call-Fastqc/shard-0/execution/`
+and
+`/$PATH/cromwell-executions/$workflow_name/1baab3f6-fca1-4eab-980a-78b33e9af11f/call-Fastqc/shard-1/execution/`
+
+Here shard-0 and shard-1 hold the output of running fastqc on `Sample_123_L001_R1.fastq` and `Sample_456_L001_R1.fastq`, respectively. 
+
+### Singularity
+
+To run with Singularity rather than docker we will need to make a [config file](https://cromwell.readthedocs.io/en/stable/tutorials/ConfigurationFiles/). Here is what is needed for Singularity:
+
+```
+# include statement
+# this ensures defaults from application.conf
+include required(classpath("application"))
+
+backend {
+  # Override the default backend.
+  default: singularity
+
+  # The list of providers.
+  providers: {
+    #Singularity: a container safe for HPC
+    singularity {
+      # The backend custom configuration.
+      actor-factory = "cromwell.backend.impl.sfs.config.ConfigBackendLifecycleActorFactory"
+      config {
+        run-in-background = true
+        runtime-attributes = """
+              String? docker
+        """
+        submit-docker = """
+          singularity exec --bind ${cwd}:${docker_cwd} docker://${docker} ${job_shell} ${script}
+        """
+      }
+    }
+  }
+}
+```
+
+You can add more than one "provider" so if you need to add info for SGE submission you can. The Broad Institute has [examples](https://github.com/broadinstitute/cromwell/tree/develop/cromwell.example.backends) of config files for other providers. Documention on Singularity and cromwell is found [here](https://cromwell.readthedocs.io/en/stable/tutorials/Containers/#specifying-containers-in-your-workflow).
+
+Also, because of how the data is mounted with singularity we can keep our previous version of the our wdl in which directories are created for us. 
+
+{% include note.html content="The `docker` argument is keeped in the `runtime` as you would with running docker." markdown="span" %}
+
+```
+workflow tutorial {
+  String workdir
+  Array[File] fastq_files
+  Array[Pair[File, File]] fastq_files_paired
+  scatter (sample in fastq_files_paired) {
+    call Fastqc {
+      input:
+        workdir = workdir,
+        fastq_R1 = workdir + "/files/" + sample.left,
+        fastq_R2 = workdir + "/files/" + sample.right,
+        base_name1 = basename(sample.left, ".fastq"),
+        base_name2 = basename(sample.right, ".fastq"),
+        fastqcdir = workdir + "/fastqc_container"
+    }
+  }
+}
+
+task Fastqc {
+  File fastq_R1
+  File fastq_R2
+  String base_name1
+  String base_name2
+  String workdir
+  String fastqcdir
+  command {
+    mkdir -p ${fastqcdir}
+    echo "Where is this going" > ${workdir}/PLEASEWORK1.txt
+    echo "Where is this going" > PLEASEWORK2.txt
+    fastqc ${fastq_R1} -o ${fastqcdir}
+    fastqc ${fastq_R2} -o ${fastqcdir}
+  }
+  output {
+    File fastqc_zip_1 = "${workdir}" + "/fastqc_container/${base_name1}_fastqc.zip"
+    File fastqc_html_1 = "${workdir}" + "/fastqc_container/${base_name1}_fastqc.html"
+    File fastqc_zip_2 = "${workdir}" + "/fastqc_container/${base_name2}_fastqc.zip"
+    File fastqc_html_2 = "${workdir}" + "/fastqc_container/${base_name2}_fastqc.html"
+  }
+  runtime {
+    docker: "staphb/fastqc:0.11.8"
+  }
+}
+```
+
+{% include note.html content="The `docker` argument is keeped in the `runtime` as you would with running docker." markdown="span" %}
+
+## Running Cromwell on Different Backends
+ 
+### **HPCs -- Aspen (SGE)** - No Containers
+ 
+To run cromwell on Aspen and have it submit jobs to the cluster first we will create a config file `singularity.conf`. 
+
+```
+# include statement
+# this ensures defaults from application.conf
+include required(classpath("application"))
+
+backend {
+  default = SGE
+  providers {
+    SGE {
+      actor-factory = "cromwell.backend.impl.sfs.config.ConfigBackendLifecycleActorFactory"
+      config {
+        concurrent-job-limit = 100
+
+        runtime-attributes = """
+        Int cpu = 1
+        Float? memory_gb
+        String? sge_queue
+        String? sge_project
+        """
+
+        submit = """
+        qsub \
+        -terse \
+        -V \
+        -b y \
+        -N ${job_name} \
+        -wd ${cwd} \
+        -o ${out} \
+        -e ${err} \
+        -pe smp ${cpu} \
+        ${"-l mem_free=" + memory_gb + "g"} \
+        ${"-q " + sge_queue} \
+        ${"-P " + sge_project} \
+        /usr/bin/env bash ${script}
+        """
+
+        job-id-regex = "(\\d+)"
+
+        kill = "qdel ${job_id}"
+        check-alive = "qstat -j ${job_id}"
+      }
+    }
+  }
+}
+```
+
+Now pass it to cromwell (non conda environment version):
+ 
+`java -Dconfig.file=singularity.conf -jar /scicomp/home-pure/qpk9/bin/cromwell-59.jar run Tutorial.wdl -i Tutorial.inputs.json`
+ 
+The default runtime parameters (AKA resources) will look something like this in the cromwell output:
+
+```
+[2021-03-30 16:36:14,18] [info] DispatchedConfigAsyncJobExecutionActor [800901c8testing_SGE.myTask:NA:1]: executing: qsub \
+-terse \
+-V \
+-b y \
+-N cromwell_800901c8_myTask \
+-wd /scicomp/home-pure/qpk9/TOAST/cromwell-executions/testing_SGE/800901c8-fd24-4429-acc9-3ecb46f7c51c/call-myTask \
+-o /scicomp/home-pure/qpk9/TOAST/cromwell-executions/testing_SGE/800901c8-fd24-4429-acc9-3ecb46f7c51c/call-myTask/execution/stdout \
+-e /scicomp/home-pure/qpk9/TOAST/cromwell-executions/testing_SGE/800901c8-fd24-4429-acc9-3ecb46f7c51c/call-myTask/execution/stderr \
+-pe smp 1 \
+-l mem_free=10.0g \
+ \
+ \
+/usr/bin/env bash /scicomp/home-pure/qpk9/TOAST/cromwell-executions/testing_SGE/800901c8-fd24-4429-acc9-3ecb46f7c51c/call-myTask/execution/script
+[2021-03-30 16:36:14,81] [info] DispatchedConfigAsyncJobExecutionActor [800901c8testing_SGE.myTask:NA:1]: job id: 9000049
+[2021-03-30 16:36:14,82] [info] DispatchedConfigAsyncJobExecutionActor [800901c8testing_SGE.myTask:NA:1]: Cromwell will watch for an rc file but will *not* double-check whether this job is actually alive (unless Cromwell restarts)
+```
+ 
+We can change this by adding runtime parameters to our task:
+
+```
+task Fastqc {
+  File fastq_R1
+  File fastq_R2
+  String base_name1
+  String base_name2
+  String workdir
+  String fastqcdir
+  command {
+    mkdir -p ${fastqcdir}
+    module load fastqc/0.11.5
+    fastqc ${fastq_R1} -o ${fastqcdir}
+    fastqc ${fastq_R2} -o ${fastqcdir}
+  }
+  output {
+    File fastqc_zip_1 = "${workdir}" + "/fastqc_container/${base_name1}_fastqc.zip"
+    File fastqc_html_1 = "${workdir}" + "/fastqc_container/${base_name1}_fastqc.html"
+    File fastqc_zip_2 = "${workdir}" + "/fastqc_container/${base_name2}_fastqc.zip"
+    File fastqc_html_2 = "${workdir}" + "/fastqc_container/${base_name2}_fastqc.html"
+  }
+  runtime {
+    memory: "5 GB"
+    cpu: "2"
+  }
+}
+```
+
+Here we changed the standard 10GB of memory and 1cpu to 5GB and 2cpus. Now when we run cromwell we can see there is a change:
+
+```
+[2021-03-30 16:39:17,27] [info] DispatchedConfigAsyncJobExecutionActor [b1745a9dtesting_SGE.myTask:NA:1]: executing: qsub \
+-terse \
+-V \
+-b y \
+-N cromwell_b1745a9d_myTask \
+-wd /scicomp/home-pure/qpk9/TOAST/cromwell-executions/testing_SGE/b1745a9d-7b22-45db-bb02-7e75c2ed0b44/call-myTask \
+-o /scicomp/home-pure/qpk9/TOAST/cromwell-executions/testing_SGE/b1745a9d-7b22-45db-bb02-7e75c2ed0b44/call-myTask/execution/stdout \
+-e /scicomp/home-pure/qpk9/TOAST/cromwell-executions/testing_SGE/b1745a9d-7b22-45db-bb02-7e75c2ed0b44/call-myTask/execution/stderr \
+-pe smp 2 \
+-l mem_free=5.0g \
+ \
+ \
+/usr/bin/env bash /scicomp/home-pure/qpk9/TOAST/cromwell-executions/testing_SGE/b1745a9d-7b22-45db-bb02-7e75c2ed0b44/call-myTask/execution/script
+[2021-03-30 16:39:17,86] [info] DispatchedConfigAsyncJobExecutionActor [b1745a9dtesting_SGE.myTask:NA:1]: job id: 9000050
+[2021-03-30 16:39:17,87] [info] DispatchedConfigAsyncJobExecutionActor [b1745a9dtesting_SGE.myTask:NA:1]: Cromwell will watch for an rc file but will *not* double-check whether this job is actually alive (unless Cromwell restarts)
+```
+
+Other possible runtime parameters are found [here](https://cromwell.readthedocs.io/en/stable/RuntimeAttributes/).
+
+### **HPCs -- Aspen (SGE)** - Using Singularity
+
+{% include note.html content="This is being run with singularity version 3.7.2-1.el7." markdown="span" %}
+
+To run cromwell on Aspen and have it submit jobs to the cluster first we will create a config file `singularity_SGE.conf`. 
+
+```
+# include statement this ensures defaults from application.conf
+include required(classpath("application"))
+
+backend {
+  default = SGE
+  providers {
+    SGE {
+      actor-factory = "cromwell.backend.impl.sfs.config.ConfigBackendLifecycleActorFactory"
+      config {
+        concurrent-job-limit = 100
+
+        runtime-attributes = """
+            Int cpu = 1
+            Float? memory_gb
+            String? sge_queue
+            String? sge_project
+            String? docker
+        """
+
+        submit = """
+            qsub \
+            -terse \
+            -V \
+            -b y \
+            -N ${job_name} \
+            -wd ${cwd} \
+            -o ${out} \
+            -e ${err} \
+            -pe smp ${cpu} \
+            ${"-l mem_free=" + memory_gb + "g"} \
+            ${"-q " + sge_queue} \
+            ${"-P " + sge_project} \
+            /usr/bin/env bash ${script}
+        """
+
+        submit-docker = """
+            # Make sure the SINGULARITY_CACHEDIR variable is set. If not use a default
+            # based on the users home.
+            if [ -z $SINGULARITY_CACHEDIR ];
+              then CACHE_DIR=$HOME/.singularity/cache
+              else CACHE_DIR=$SINGULARITY_CACHEDIR
+            fi
+            # Make sure cache dir exists so lock file can be created by flock
+            mkdir -p $CACHE_DIR
+            LOCK_FILE=$CACHE_DIR/singularity_pull_flock
+            # Create an exclusive filelock with flock. --verbose is useful for
+            # for debugging, as is the echo command. These show up in `stdout.submit`.
+            flock --verbose --exclusive --timeout 900 $LOCK_FILE \
+            singularity exec --containall docker://${docker} \
+            echo "successfully pulled ${docker}!"
+
+            # Submit the script to SGE
+            qsub \
+            -terse \
+            -V \
+            -b y \
+            -N ${job_name} \
+            -wd ${cwd} \
+            -o ${cwd}/execution/stdout \
+            -e ${cwd}/execution/stderr \
+            -pe smp ${cpu} \
+            ${"-l mem_free=" + memory_gb + "g"} \
+            ${"-q " + sge_queue} \
+            ${"-P " + sge_project} \
+            singularity exec --containall --bind ${cwd}:${docker_cwd} $IMAGE ${job_shell} ${docker_script}
+        """
+
+        job-id-regex = "(\\d+)"
+        kill = "qdel ${job_id}"
+        check-alive = "qstat -j ${job_id}"
+      }
+    }
+  }
+}
+```
+
+Then you pass the config file like this:
+
+```
+java -jar -Dconfig.file=singularity_SGE.conf ~/bin/cromwell-59.jar run Tutorial_Container.wdl --inputs Tutorial.inputs.json
+```
 
 
 ## Drawing a DAG
@@ -1216,130 +1522,3 @@ You can use a grep to get these lines out to check if memory or cpu requirements
   - [Call caching](https://cromwell.readthedocs.io/en/stable/Configuring/#call-caching) can handle some of this, but you will need to edit this in the config file for cromwell. Also, there is some [notes](https://cromwell.readthedocs.io/en/stable/Configuring/#call-caching) on that so becareful and read documentation first.  
   - There are also more details of [call caching](https://support.terra.bio/hc/en-us/articles/360047664872-Call-caching-How-it-works-and-when-to-use-it) from Terra suport.  
 
-
-## Running Cromwell on Different Backends
- 
-**HPCs -- Aspen (SGE)**
- 
-To run cromwell on Aspen and have it submit jobs to the cluster first we will create a config file `your.conf`. 
-
-```
-# include statement
-# this ensures defaults from application.conf
-include required(classpath("application"))
-
-backend {
-  default = SGE
-  providers {
-    SGE {
-      actor-factory = "cromwell.backend.impl.sfs.config.ConfigBackendLifecycleActorFactory"
-      config {
-        concurrent-job-limit = 100
-
-        runtime-attributes = """
-        Int cpu = 1
-        Float? memory_gb
-        String? sge_queue
-        String? sge_project
-        """
-
-        submit = """
-        qsub \
-        -terse \
-        -V \
-        -b y \
-        -N ${job_name} \
-        -wd ${cwd} \
-        -o ${out} \
-        -e ${err} \
-        -pe smp ${cpu} \
-        ${l mem_free=" + memory_gb + "g"} \
-        ${q " + sge_queue} \
-        ${P " + sge_project} \
-        /usr/bin/env bash ${script}
-        """
-
-        job-id-regex = "(\\d+)"
-
-        kill = "qdel ${job_id}
-        check-alive = "qstat -j ${job_id}
-      }
-    }
-  }
-}
-```
-
-Now pass it to cromwell (non conda environment version):
- 
-`java -Dconfig.file=your.conf -jar /$PATH/bin/cromwell-59.jar run Tutorial.wdl -i Tutorial.inputs.json`
- 
-The default runtime parameters (AKA resources) will look something like this in the cromwell output:
-
-```
-[2021-03-30 16:36:14,18] [info] DispatchedConfigAsyncJobExecutionActor [800901c8testing_SGE.myTask:NA:1]: executing: qsub \
--terse \
--V \
--b y \
--N cromwell_800901c8_myTask \
--wd /$PATH/TOAST/cromwell-executions/testing_SGE/800901c8-fd24-4429-acc9-3ecb46f7c51c/call-myTask \
--o /$PATH/TOAST/cromwell-executions/testing_SGE/800901c8-fd24-4429-acc9-3ecb46f7c51c/call-myTask/execution/stdout \
--e /$PATH/TOAST/cromwell-executions/testing_SGE/800901c8-fd24-4429-acc9-3ecb46f7c51c/call-myTask/execution/stderr \
--pe smp 1 \
--l mem_free=10.0g \
- \
- \
-/usr/bin/env bash /$PATH/cromwell-executions/testing_SGE/800901c8-fd24-4429-acc9-3ecb46f7c51c/call-myTask/execution/script
-[2021-03-30 16:36:14,81] [info] DispatchedConfigAsyncJobExecutionActor [800901c8testing_SGE.myTask:NA:1]: job id: 9000049
-[2021-03-30 16:36:14,82] [info] DispatchedConfigAsyncJobExecutionActor [800901c8testing_SGE.myTask:NA:1]: Cromwell will watch for an rc file but will *not* double-check whether this job is actually alive (unless Cromwell restarts)
-```
- 
-We can change this by adding runtime parameters to our task:
-
-```
-task Fastqc {
-  File fastq_R1
-  File fastq_R2
-  String base_name1
-  String base_name2
-  String workdir
-  String fastqcdir
-  command {
-    mkdir -p ${fastqcdir}
-    module load fastqc/0.11.5
-    fastqc ${fastq_R1} -o ${fastqcdir}
-    fastqc ${fastq_R2} -o ${fastqcdir}
-  }
-  output {
-    File fastqc_zip_1 = "${workdir}" + "/fastqc/${base_name1}_fastqc.zip"
-    File fastqc_html_1 = "${workdir}" + "/fastqc/${base_name1}_fastqc.html"
-    File fastqc_zip_2 = "${workdir}" + "/fastqc/${base_name2}_fastqc.zip"
-    File fastqc_html_2 = "${workdir}" + "/fastqc/${base_name2}_fastqc.html"
-  }
-  runtime {
-    memory: "5 GB"
-    cpu: "2"
-  }
-} 
-```
-
-Here we changed the standard 10GB of memory and 1cpu to 5GB and 2cpus. Now when we run cromwell we can see there is a change:
-
-```
-[2021-03-30 16:39:17,27] [info] DispatchedConfigAsyncJobExecutionActor [b1745a9dtesting_SGE.myTask:NA:1]: executing: qsub \
--terse \
--V \
--b y \
--N cromwell_b1745a9d_myTask \
--wd /$PATH/cromwell-executions/testing_SGE/b1745a9d-7b22-45db-bb02-7e75c2ed0b44/call-myTask \
--o /$PATH/cromwell-executions/testing_SGE/b1745a9d-7b22-45db-bb02-7e75c2ed0b44/call-myTask/execution/stdout \
--e /$PATH/cromwell-executions/testing_SGE/b1745a9d-7b22-45db-bb02-7e75c2ed0b44/call-myTask/execution/stderr \
--pe smp 2 \
--l mem_free=5.0g \
- \
- \
-/usr/bin/env bash /$PATH/TOAST/cromwell-executions/testing_SGE/b1745a9d-7b22-45db-bb02-7e75c2ed0b44/call-myTask/execution/script
-[2021-03-30 16:39:17,86] [info] DispatchedConfigAsyncJobExecutionActor [b1745a9dtesting_SGE.myTask:NA:1]: job id: 9000050
-[2021-03-30 16:39:17,87] [info] DispatchedConfigAsyncJobExecutionActor [b1745a9dtesting_SGE.myTask:NA:1]: Cromwell will watch for an rc file but will *not* double-check whether this job is actually alive (unless Cromwell restarts)
-```
-
-Other possible runtime parameters are found [here](https://cromwell.readthedocs.io/en/stable/RuntimeAttributes/).
