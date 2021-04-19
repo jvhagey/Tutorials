@@ -1255,7 +1255,7 @@ task Fastqc {
 
 ## Running Cromwell on Different Backends
  
-### **HPCs -- Aspen (SGE)** - No Containers
+### **HPCs -- SGE** - No Containers
  
 To run cromwell on Aspen and have it submit jobs to the cluster first we will create a config file `singularity.conf`. 
 
@@ -1317,14 +1317,14 @@ The default runtime parameters (AKA resources) will look something like this in 
 -V \
 -b y \
 -N cromwell_800901c8_myTask \
--wd /scicomp/home-pure/qpk9/TOAST/cromwell-executions/testing_SGE/800901c8-fd24-4429-acc9-3ecb46f7c51c/call-myTask \
--o /scicomp/home-pure/qpk9/TOAST/cromwell-executions/testing_SGE/800901c8-fd24-4429-acc9-3ecb46f7c51c/call-myTask/execution/stdout \
--e /scicomp/home-pure/qpk9/TOAST/cromwell-executions/testing_SGE/800901c8-fd24-4429-acc9-3ecb46f7c51c/call-myTask/execution/stderr \
+-wd /$PATH/cromwell-executions/testing_SGE/800901c8-fd24-4429-acc9-3ecb46f7c51c/call-myTask \
+-o /$PATH/cromwell-executions/testing_SGE/800901c8-fd24-4429-acc9-3ecb46f7c51c/call-myTask/execution/stdout \
+-e /$PATH/cromwell-executions/testing_SGE/800901c8-fd24-4429-acc9-3ecb46f7c51c/call-myTask/execution/stderr \
 -pe smp 1 \
 -l mem_free=10.0g \
  \
  \
-/usr/bin/env bash /scicomp/home-pure/qpk9/TOAST/cromwell-executions/testing_SGE/800901c8-fd24-4429-acc9-3ecb46f7c51c/call-myTask/execution/script
+/usr/bin/env bash /$PATH/cromwell-executions/testing_SGE/800901c8-fd24-4429-acc9-3ecb46f7c51c/call-myTask/execution/script
 [2021-03-30 16:36:14,81] [info] DispatchedConfigAsyncJobExecutionActor [800901c8testing_SGE.myTask:NA:1]: job id: 9000049
 [2021-03-30 16:36:14,82] [info] DispatchedConfigAsyncJobExecutionActor [800901c8testing_SGE.myTask:NA:1]: Cromwell will watch for an rc file but will *not* double-check whether this job is actually alive (unless Cromwell restarts)
 ```
@@ -1366,21 +1366,21 @@ Here we changed the standard 10GB of memory and 1cpu to 5GB and 2cpus. Now when 
 -V \
 -b y \
 -N cromwell_b1745a9d_myTask \
--wd /scicomp/home-pure/qpk9/TOAST/cromwell-executions/testing_SGE/b1745a9d-7b22-45db-bb02-7e75c2ed0b44/call-myTask \
--o /scicomp/home-pure/qpk9/TOAST/cromwell-executions/testing_SGE/b1745a9d-7b22-45db-bb02-7e75c2ed0b44/call-myTask/execution/stdout \
--e /scicomp/home-pure/qpk9/TOAST/cromwell-executions/testing_SGE/b1745a9d-7b22-45db-bb02-7e75c2ed0b44/call-myTask/execution/stderr \
+-wd /$PATH/cromwell-executions/testing_SGE/b1745a9d-7b22-45db-bb02-7e75c2ed0b44/call-myTask \
+-o /$PATH/cromwell-executions/testing_SGE/b1745a9d-7b22-45db-bb02-7e75c2ed0b44/call-myTask/execution/stdout \
+-e /$PATH/cromwell-executions/testing_SGE/b1745a9d-7b22-45db-bb02-7e75c2ed0b44/call-myTask/execution/stderr \
 -pe smp 2 \
 -l mem_free=5.0g \
  \
  \
-/usr/bin/env bash /scicomp/home-pure/qpk9/TOAST/cromwell-executions/testing_SGE/b1745a9d-7b22-45db-bb02-7e75c2ed0b44/call-myTask/execution/script
+/usr/bin/env bash /$PATH/cromwell-executions/testing_SGE/b1745a9d-7b22-45db-bb02-7e75c2ed0b44/call-myTask/execution/script
 [2021-03-30 16:39:17,86] [info] DispatchedConfigAsyncJobExecutionActor [b1745a9dtesting_SGE.myTask:NA:1]: job id: 9000050
 [2021-03-30 16:39:17,87] [info] DispatchedConfigAsyncJobExecutionActor [b1745a9dtesting_SGE.myTask:NA:1]: Cromwell will watch for an rc file but will *not* double-check whether this job is actually alive (unless Cromwell restarts)
 ```
 
 Other possible runtime parameters are found [here](https://cromwell.readthedocs.io/en/stable/RuntimeAttributes/).
 
-### **HPCs -- Aspen (SGE)** - Using Singularity
+### **HPCs -- SGE** - Using Singularity
 
 {% include note.html content="This is being run with singularity version 3.7.2-1.el7." markdown="span" %}
 
