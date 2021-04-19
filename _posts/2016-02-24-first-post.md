@@ -1,12 +1,12 @@
 ---
-title:  "Welcome to the WDPB Tutorials Page!"
+title:  "Welcome to the My Tutorials Page!"
 categories: update
 permalink: myupdate.html
 tags: [news]
 ---
 
 
-# Our page is now live
+# The page is now live
 
 Check back for updates
 
