@@ -48,7 +48,7 @@ The paper for Singularity is [here](https://journals.plos.org/plosone/article?id
 | Zero configuration in SCBS environment |  | X |
 | Needs elevated privileges to run | X |  | 
 
-Docker needs root access to run in SCBS environment - this leads to security issues. 
+Docker needs root access to run - this leads to security issues. 
 
 In summary Singlularity is:
 
