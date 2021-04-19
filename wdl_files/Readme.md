@@ -1,3 +1,5 @@
+This folder contains example wdls and an input.json file to get you going. The config files won't need to be changed, but you will need to swap out your wdl and input files. 
+
 # Example Files for Running wdl
 
 1. Running wdl locally
