@@ -6,6 +6,13 @@ folder: mydoc
 ---
 # WDL Tutorial
 
+In Feb 2020 StaPH-B had their monthly meeting focused on WDL/Cromwell and a recording of it can be found [here](http://www.staphb.org/resources/staphb-videos/).
+
+## TL;DR
+
+[**TL;DR**](https://github.com/jvhagey/Tutorials/tree/main/wdl_files)
+- This has all example wdl and config files to run wdl workflow with cromwell.
+
 ## Pre-Tutorial Installation
 
 **To be able to run this tutorial** you will need to have installed cromwell, womtool, and wdltools. A method for install is found [here](https://jvhagey.github.io/Tutorials/mydoc_cromwell.html).
