@@ -1,0 +1,10 @@
+# Replace $PATH with your path
+
+{
+  "tutorial.workdir" : "/$PATH/wdl_Tutorial/Tutorial",
+  "tutorial.fastq_files": ["/$PATH/files/Sample_123_L001_R2.fastq","/$PATH/files/Sample_123_L001_R1.fastq","/$PATH/files/Sample_456_L001_R2.fastq","/$PATH/files/Sample_456_L001_R1.fastq"],
+  "tutorial.fastq_files_paired": [
+    {"left": "Sample_123_L001_R1.fastq", "right": "Sample_123_L001_R2.fastq"},
+    {"left": "Sample_456_L001_R1.fastq", "right": "Sample_456_L001_R2.fastq"}
+  ]
+}
