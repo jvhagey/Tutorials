@@ -185,7 +185,7 @@ Useful commands for Docker
 - Delete all containers (only if stopped): `docker rm $(docker ps -a -q)`  
 - Display logs of a container: `docker logs [container name]`  
 
-## Running Singularity/Docker on Aspen/Biolinux
+## Running Singularity/Docker on HPC
 
 Here we will look at an example of running bwa and samtools to align reads to a reference and create a bam file. Without containers you would normally do something like this:
 
@@ -260,13 +260,5 @@ singularity -s exec ./images/samtools-1.9.sif samtools view -b > ./output-local.
 {% include image.html file="DvsC1.PNG" url="https://www.youtube.com/watch?v=juPLTMnFrcI" alt="cromwell_layout" caption="Slide from talk on Singularity from Jake Garfin during the monthly StaPH-B call October 2019. Full video on [Youtube](https://www.youtube.com/watch?v=juPLTMnFrcI)." max-width="600" %}
 
 {% include image.html file="DvsC2.PNG" url="https://www.youtube.com/watch?v=juPLTMnFrcI" alt="cromwell_layout" caption="Slide from talk on Singularity from Jake Garfin during the monthly StaPH-B call October 2019. Full video on [Youtube](https://www.youtube.com/watch?v=juPLTMnFrcI)." max-width="600" %}
-
-## Resources for CDC Folks
-
-There container recipes are for Docker/Singularity on [gitlab](https://git.biotech.cdc.gov/scbs/containers). 
-
-There are prebuilt Singularity containers accessible on biolinux and Aspen. They can be viewed:
-
-`tree -L 1 /apps/standalone/singularity`
 
 
