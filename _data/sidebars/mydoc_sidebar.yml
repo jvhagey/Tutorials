@@ -75,3 +75,15 @@ entries:
     - title: WDL 
       url: /mydoc_wdl.html 
       output: web, pdf
+      
+  - title: Containers
+    output: web, pdf
+    folderitems:
+
+    - title: Basics of Containers 
+      url: /mydoc_containers.html
+      output: web, pdf
+    
+    - title: Docker and Singularity
+      url: /mydoc_docker.html
+      output: web, pdf
