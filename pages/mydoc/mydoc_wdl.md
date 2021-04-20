@@ -754,6 +754,9 @@ python <<CODE
 CODE
 >>>
 ```
+
+{% include warning.html content=" Here we use the `<<< >>>` notation and so you will need to use `~{variable}` instead of `${variable}` if you use the latter is that it gets a little too confusing to the parser about what's bash and what's WDL.." markdown="span" %}
+
  
 Indent after python and then follow normal indention rules of python. Notice here we don't have the `{` and instead have a series of `<`. Also, we need to have our imports to be part of the python code block. 
 
@@ -764,7 +767,7 @@ task python_practice2 {
   String var
   String arg2
   command <<<
-    python get_read_lengths.py --arg1=${var} ${arg2}
+    python get_read_lengths.py --arg1=~{var} ~{arg2}
   >>>
 }
 ```
@@ -1026,7 +1029,7 @@ task python_practice {
 task bash_practice{
   File read_lengths
   command<<<
-  cat ${read_lengths} | cut -d, -f3
+  cat ~{read_lengths} | cut -d, -f3
   >>>
   output {
     String out = read_string(stdout())
