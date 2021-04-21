@@ -67,7 +67,7 @@ In snakemake terms:
 
 {% include important.html content="**This is tutorial was written using WDL draft-2**" markdown="span" %}
 
-You can check the version of WDL that cromwell is reading it was check the beginning of the cromwell output when you run your WDL. You should see something like this. 
+You can check the version of WDL that cromwell is reading by looking at the beginning of the cromwell output when you run your WDL. You should see something like this. 
 
 ```
 [2021-04-21 12:56:09,34] [info] MaterializeWorkflowDescriptorActor [dcf91504]: Parsing workflow as WDL draft-2
