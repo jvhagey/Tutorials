@@ -13,6 +13,8 @@ In Feb 2020 StaPH-B had their monthly meeting focused on WDL/Cromwell and a reco
 [**TL;DR**](https://github.com/jvhagey/Tutorials/tree/main/wdl_files)
 - This has all example wdl and config files to run wdl workflow with cromwell.
 
+**Make sure to also read the notes on versions of WDL!**
+
 ## Pre-Tutorial Installation
 
 **To be able to run this tutorial** you will need to have installed cromwell, womtool, and wdltools. A method for install is found [here](https://jvhagey.github.io/Tutorials/mydoc_cromwell.html).
@@ -27,7 +29,6 @@ pip install pandas
 ```
 
 This wdl also requires a script from [Kraken Tools](https://github.com/jenniferlu717/KrakenTools) that has a slight modification described [here](https://github.com/jenniferlu717/KrakenTools/issues/16). This version of the script is found in the [gitlab folder](https://git.biotech.cdc.gov/xxh5/wdpb_bioinformaticstrainings/-/blob/master/training_02/Scripts/extract_kraken_reads.py).
-
 
 ## What is WDL?
 
@@ -56,14 +57,125 @@ A wdl script is broken down into:
     
 {% include image.html file="example_wdl.png" url="https://support.terra.bio/hc/en-us/articles/360037117492-Getting-Started-with-WDL" alt="wdl" caption="Example of the different parts of a task." max-width="600" %}
 
-
 *Snakemake comparisions*  
 In snakemake terms:  
 - `tasks` are `rules` 
 - In wdl `commands` would be what you put in the `shell:` or `run` portion of a `rule` in snakemake.  
 - In wdl `runtime` would be what you put in the `resoures` portion of a `rule` in snakemake. I do thinks this clutters up the script a bit more than in a Snakefile, but you don't have to have a `config.json` so pick your posion.  
 
+## Versions of WDL
+
+{% include important.html content="**This is tutorial was written using WDL draft-2**" markdown="span" %}
+
+You can check the version of WDL that cromwell is reading it was check the beginning of the cromwell output when you run your WDL. You should see something like this. 
+
+```
+[2021-04-21 12:56:09,34] [info] MaterializeWorkflowDescriptorActor [dcf91504]: Parsing workflow as WDL draft-2
+```
+
+{% include important.html content="**Best practice is to have a version statement (`version 1.0`) as the first line of your WDL file.**" markdown="span" %}
+
+You can find differences in the syntax by checking the version details on [wdl's github](https://github.com/openwdl/wdl/tree/main/versions).
+
+A major difference between the way this tutorial is written WDL `version draft-2` and WDL `version 1.0` is an input statement. 
+
+For example version draft-2:
+
+```
+version draft-2
+
+import "task_qc.wdl" as qc
+
+workflow read_QC {
+  input {
+    File read1_raw = "../Test_data/SRR11953697/SRR11953697_1.fastq"
+    File read2_raw = "../Test_data/SRR11953697/SRR11953697_2.fastq"
+  }
+  call qc.fastqc {
+    input:
+      read1 = read1_raw,
+      read2 = read2_raw,
+      read1_name = basename(read1_raw, '.fastq'),
+      read2_name = basename(read2_raw, '.fastq')
+  }
+  output {
+    File fastqc1_html = fastqc.fastqc1_html
+    File fastqc1_zip = fastqc.fastqc1_zip
+    File fastqc2_html = fastqc.fastqc2_html
+    File fastqc2_zip = fastqc.fastqc2_zip
+  }
+}
+```
+
+The `task_qc.wdl` looks like this:
+
+```
+version draft-2
+
+task fastqc {
+  input {
+    File read1
+    File read2
+    String read1_name
+    String read2_name
+  }
+  command {
+    fastqc --outdir $PWD ${read1} ${read2}
+  }
+  output {
+    File fastqc1_html = "${read1_name}_fastqc.html"
+    File fastqc1_zip = "${read1_name}_fastqc.zip"
+    File fastqc2_html = "${read2_name}_fastqc.html"
+    File fastqc2_zip = "${read2_name}_fastqc.zip"
+  }
+  runtime {
+    docker: "staphb/fastqc:0.11.8"
+  }
+}
+```
+
+Running this workflow will cause some version of the error:
+
+```
+ERROR: Unexpected symbol (line 6, col 3) when parsing '_gen10'.
+Expected rbrace, got input.
+input {
+^
+```
+
+{% include warning.html content="**This is because you use the `input{}` statement with `version 1.0` and NOT `draft-2`. **" markdown="span" %}
+
+```
+version 1.0
+
+import "task_qc.wdl" as qc
+
+workflow read_QC {
+  input {
+    File read1_raw = "../Test_data/SRR11953697/SRR11953697_1.fastq"
+    File read2_raw = "../Test_data/SRR11953697/SRR11953697_2.fastq"
+  }
+  call qc.fastqc {
+    input:
+      read1 = read1_raw,
+      read2 = read2_raw,
+      read1_name = basename(read1_raw, '.fastq'),
+      read2_name = basename(read2_raw, '.fastq')
+  }
+  output {
+    File fastqc1_html = fastqc.fastqc1_html
+    File fastqc1_zip = fastqc.fastqc1_zip
+    File fastqc2_html = fastqc.fastqc2_html
+    File fastqc2_zip = fastqc.fastqc2_zip
+  }
+}
+```
+
+Changing the version number in this case will fix the error here. 
+
 ## Our First WDL
+
+{% include important.html content="**Parsing workflow as WDL draft-2.**" markdown="span" %}
 
 **Baby WDL**
 
@@ -94,14 +206,14 @@ This will just output "Hello World" in hot pink as part of cromwell's output. Th
 
 ## Begin Tutorial
 
+{% include important.html content="**Parsing workflow as WDL draft-2.**" markdown="span" %}
+
 Now we can run through a similar tutorial as we did with Snakemake this will start out with running fastqc on a forward and reverse read for one sample. I ran this on Aspen using a conda environment following [these instructions](https://jvhagey.github.io/Tutorials/mydoc_cromwell.html). Anaconda and Conda are explained [here](https://jvhagey.github.io/Tutorials/mydoc_Installation.html). 
 
 
 {% include important.html content="**For the below file I had to change the full path to `$PATH` for security reasons so make sure you put the full path!!**" markdown="span" %}
 
 ```
-# version 1.0
-
 workflow tutorial {
   call fastqc {
   }
@@ -663,7 +775,7 @@ task Clean_Kraken {
 
 The "big" difference here is we is that we link the input of `clean_kraken` from the task `Kraken` in the using the syntax `kraken = Kraken.kraken, report = Kraken.report` in the `workflow` portion like we did with the `multiqc` task.
 
-## Other Pipeline patterns
+## Other Pipeline Patterns
 Other pipeline patters are addressed [here](https://support.terra.bio/hc/en-us/articles/360037486731-Add-Plumbing). 
 
 ## Aliasing and Subworkflows
