@@ -8,7 +8,7 @@ folder: mydoc
 
 This tutorial is a way to get started with WDL if you are coming from snakemake or if you are use to a shared file system set up (ie. you can access and write out directories and files in a local file system). This is only possible in an uncontainerized case of using WDL. So we will start off with an uncontainerized version of the script and will move into a containerized version after. Ultimately, the design philosophy of the WDL language is to make it portable with cloud computing and containers. Due to a desire to make our scripts portable we will need to always assume that all our scripts outputs are ephemeral and lost forever unless it was an explicit `File` output.
 
-In Feb 2020 StaPH-B had their monthly meeting focused on WDL/Cromwell and a recording of it can be found [here](http://www.staphb.org/resources/staphb-videos/).
+For some background you can check out StaPH-B's had their monthly meeting focused on WDL/Cromwell that was recorded on [Feb 2020](http://www.staphb.org/resources/staphb-videos/).
 
 ## TL;DR
 
