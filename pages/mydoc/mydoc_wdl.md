@@ -6,6 +6,8 @@ folder: mydoc
 ---
 # WDL Tutorial
 
+This tutorial is a way to get started with WDL if you are coming from snakemake or if you are use to a shared file system set up (ie. you can access and write out directories and files in a local file system). This is only possible in an uncontainerized case of using WDL. So we will start off with an uncontainerized version of the script and will move into a containerized version after. Ultimately, the design philosophy of the WDL language is to make it portable with cloud computing and containers. Due to a desire to make our scripts portable we will need to always assume that all our scripts outputs are ephemeral and lost forever unless it was an explicit `File` output.
+
 In Feb 2020 StaPH-B had their monthly meeting focused on WDL/Cromwell and a recording of it can be found [here](http://www.staphb.org/resources/staphb-videos/).
 
 ## TL;DR
@@ -1243,7 +1245,7 @@ Currently, StaPH-B has built many containers that are available on [dockerhub](h
  
 wdl is configured to work with docker hub so we can swap out the module load portion of the tutorial and just pull in a docker container to run fastqc for us. This allows for reproducibility. Make sure you specify the version of fastqc if not then docker will just pull the latest one version of the container, but that will change so it won't be reproducible then. 
 
-{% include warning.html content="We CANNOT make directories as we did before though. There is an issue with how the container is mounted by cromwell (I think)." markdown="span" %}
+{% include warning.html content="We CANNOT make directories as we did before though. This is due how data is mounted in the container, which is controlled my cromwell. This also is in line with the design philosophy of the WDL language to make our script portable. In this case we do not have access to the underlying local file structure (can't create a directory in local system) and the output is all contained within container and will be removed after the run unless we explicity make it an `output`. " markdown="span" %}
 
 ```
 workflow tutorial {
