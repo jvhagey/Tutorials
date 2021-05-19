@@ -50,6 +50,8 @@ wsl --set-version <distribution name> <versionNumber>
 
 ## WSL-2 Issues and Troubleshooting
 
+### 1
+
 {% include warning.html content="**WSL-2 has known issues** [1](https://github.com/microsoft/WSL/issues/4275) and [2](https://github.com/microsoft/WSL/issues/6427) that if you convert to WSL-2 it will break commands that connect to the internet (wget, apt-get, ping, conda etc...). See the [installing wsl](https://git.biotech.cdc.gov/xxh5/wdpb_bioinformaticstrainings/-/blob/master/pages/mydoc/mydoc_wsl.md) page for more details." markdown="span" %}
 
 And as one person on github put it:
@@ -109,6 +111,23 @@ Exit and restart your computer. Boot your distro. Now it should be *fixed*, kind
 
 {% include warning.html content="This workaround will only work when you are off the CDC VPN :( This isn't ideal, but either are computers." markdown="span" %}
 
+
+### 2
+
+You might see this error:
+
+```
+Logon failure: the user has not been granted the requested logon type at this computer
+```
+
+Solutions are outlined in this [github issue](https://github.com/microsoft/WSL/issues/5401). The following worked for me.
+
+Close your distro and open command prompt in admin mode. Run the following:
+```
+sc stop vmcompute
+sc start vmcompute
+```
+Reopen your distro and it should be back to "normal"
 
 
 
