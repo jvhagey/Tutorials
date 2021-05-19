@@ -245,6 +245,16 @@ singularity -s exec -B $(pwd)/data:/data ./images/bwa-0.7.17.sif bwa mem /data/r
 singularity -s exec ./images/samtools-1.9.sif samtools view -b > ./output-local.bam
 ```
 
+## How to Build and Run Local Docker Image
+
+Write a docker file
+
+```
+cd Dockerfile
+docker build --tag staphb/ivar:1.3.1_Titan .
+```
+
+
 ## Docker vs Singularity Commands
 
 | Task | Docker | Singularity |
