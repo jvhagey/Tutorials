@@ -40,4 +40,4 @@ Pulp: Error while trying to execute, use msg=True for more detailscbc
 
 # Known Errors
 
-Sometimes sge-status.py does complain about a job id not being able to be found for example: `error: job id #######`. It's unclear why the sge-status.py script is giving this error, but it doesn't seem to keep snakemake from running correctly. So for now ignore it. 
+Sometimes sge-status.py does complain about a job id not being able to be found for example: `error: job id #######`. This happens when snakemake tries to resume a failed job, you will see something like this `Resuming incomplete job 1358 with external jobid '9791634'`. I have found this is usually caused by disconnection from your server unexpectedly. I have gotten rid of the error by deleteing the ~/.snakemake/incomplete folder that is found in the directory you are working out of. 
