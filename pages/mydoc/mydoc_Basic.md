@@ -776,3 +776,7 @@ Cyclic dependency on rule examplerule.
 ```
 
 There is a matching file in your input and output arguments so doublecheck the rule that snakemake complains about. You can only have it in one location.
+
+- Running 'awk' in 'shell' commnad of snakemake
+
+If you have statements that contain `{}` in them then snakemake will complain about this as you pass arguments to snakemakes `shell` using `{}` so you will just need to escape the `{}` by using `{{}}` instead. Yay, an easy fix!
