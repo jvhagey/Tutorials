@@ -173,7 +173,9 @@ singularity pull docker://staphb/fastqc:0.11.9
 
 ## Useful Docker Commands
 
-Useful commands for Docker
+[Documentation for all Docker commands](https://docs.docker.com/engine/reference/commandline/docker/).
+
+Useful commands for Docker: 
 
 - List your images: `docker image ls`  
 - Delete a specific image: `docker image rm [image name]`  
