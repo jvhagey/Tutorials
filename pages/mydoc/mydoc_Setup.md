@@ -121,6 +121,14 @@ Or
 conda env remove --name smake
 ```
 
+## Changing the path to your environments
+
+You can change where conda looks for your environments running the following line. 
+
+```
+conda config --add envs_dirs /$PATH/bin/anaconda3/envs/
+```
+
 ## Exporting Your Environment
 
 Now that you have made your own custom environement you can export the details to a .yml file that can be used to install the exact same dependencies into an environment on a different computer. 
